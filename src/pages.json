@@ -39,6 +39,12 @@
 			}
 		},
 		{
+			"path": "pages/star/zxx-detail",
+			"style": {
+				"navigationBarTitleText": "塔罗详情"
+			}
+		},
+		{
 			"path": "pages/index/IndexPage/LocalArchives",
 			"style": {
 				"navigationBarTitleText": "本地档案"

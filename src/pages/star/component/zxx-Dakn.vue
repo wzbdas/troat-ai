@@ -1,62 +1,204 @@
 <template>
-  <div class="circle-container" ref="containerRef">
-    <div class="circle-wrapper">
-      <div 
-        v-for="(image, index) in images" 
-        :key="index"
-        class="image-wrapper"
+  <!-- #ifdef MP-WEIXIN -->
+   <view class="circle-container">
+    <view 
+      v-for="(image, index) in images" 
+      :key="index"
+      class="image-wrapper"
+      :style="{
+        transform: `rotate(${index * (360 / images.length)}deg) translateY(-${circleRadius}px) rotate(${rotationAngle}deg)`
+      }"
+    >
+      <image 
+        :src="image"
+        class="tarot-image"
+        mode="aspectFill"
         :style="{
-          transform: `rotate(${index * (360 / images.length)}deg) translateX(${circleRadius}px)`
+          transform: `rotate(-${index * (360 / images.length)}deg)`
         }"
-      >
-        <img 
-          :src="image"
-          class="tarot-image"
-          :alt="`Tarot card ${imageNames[index]}`"
-          :style="{
-            transform: `rotate(-${index * (360 / images.length)}deg)`
-          }"
-        />
-      </div>
-      <div class="center-button-wrapper">
-        <button class="select-button" @click="handleSelect">
-          <span class="button-text">选一选</span>
-          <div class="ripple-effect"></div>
-        </button>
-      </div>
-    </div>
-    
-  </div>
-  <Intro />
-  <div class="card-list">
-    <div class="card-info" v-for="(card, index) in tarotCards"
+        @error="handleImageError(index)"
+      />
+    </view>
+    <view class="center-button-wrapper">
+      <button class="select-button" @tap="handleSelect">
+        <text class="button-text">选一选</text>
+      </button>
+    </view>
+    <!-- 选择抽牌数量的弹窗 -->
+  <view class="modal" v-if="showModal">
+    <view class="modal-content">
+      <view class="modal-title">请选择抽取数量</view>
+      <view class="modal-buttons">
+        <button @tap="handleDrawCards(1)" class="modal-button">抽一张</button>
+        <button @tap="handleDrawCards(2)" class="modal-button">抽两张</button>
+        <button @tap="handleDrawCards(3)" class="modal-button">抽三张</button>
+      </view>
+    </view>
+  </view>
+  <!-- 展示抽到的卡牌弹窗 -->
+  <view class="modal" v-if="showCardModal">
+    <view class="modal-content">
+      <view class="modal-title">你抽到的卡牌</view>
+      <view class="selected-cards">
+        <view v-for="(card, index) in selectedCards" :key="index" class="selected-card">
+          <image :src="card.image" mode="aspectFill" class="selected-card-image"/>
+          <text class="selected-card-title">{{card.title}}</text>
+        </view>
+      </view>
+      <button @tap="closeCardModal" class="modal-button">关闭</button>
+    </view>
+  </view>
+  </view>
+    <Intro />
+ 
+  <view class="card-list">
+    <view class="card-info" v-for="(card, index) in tarotCards"
     :key="index">
-    <div >
+    <view >
       <img class="card-image" :src="card.image" :alt="card.title">
-    </div>
-    <div class="card-text">
+    </view>
+    <view class="card-text">
       <p class="card-title">{{ card.title }}</p>
       <p class="card-description">
         {{ card.description }}
       </p>
-    </div>
-  </div>
-  </div>
-  
+    </view>
+  </view>
+  </view>
+    <!-- #endif -->
+  <!-- #ifdef H5 -->
+  <view class="h5-container">
+  <view class="center-button-wrapper">
+    <button class="select-button" @tap="handleSelect">
+      <text class="button-text">选一选</text>
+    </button>
+  </view>
+  </view>
+  <view>
+    <text>kanyixia</text>
+  </view>
+  <!-- #endif -->
+   
+
 </template>
 
 <script setup>
-import { ref, onBeforeMount, onUnmounted, nextTick } from 'vue';
+import { ref, onMounted, onUnmounted } from 'vue'
 import Intro from './zxx-Intro.vue'
 
-// 图片名称数组
-const imageNames = [
+// 添加新的响应式变量
+const showModal = ref(false)
+const showCardModal = ref(false)
+const selectedCards = ref([])
+const rotationDuration = 8000 // 旋转持续时间（毫秒）
+
+// 修改图片路径处理方式
+// //#ifdef H5
+// const getImagePath = (name) => {
+//   const cleanName = name.trim();
+//   return `/zx-images/${cleanName}.jpg`; // 绝对路径，不编码中文
+// };
+
+// //#endif
+//#ifdef MP-WEIXIN
+const getImagePath = (name) => {
+  return `/static/zx-images/${name}.jpg`
+}
+//#endif
+
+// 修改图片数组处理
+const images = [
   '00愚者', '01魔术师', '02女祭祀', '03皇后', '04皇帝',
   '05教皇', '06恋人', '07战车', '08力量', '09隐士',
   '10命运之轮', '11正义', '12倒吊人', '13死神', '14节制',
   '15恶魔', '16高塔', '17星星', '18月亮', '19太阳',
   '20审判', '21世界'
-]
+].map(name => getImagePath(name))
+
+
+const circleRadius = ref(0)
+const rotationAngle = ref(0)
+const rotationSpeed = ref(5)
+const isRotating = ref(false)
+let rotationInterval = null
+const showSelectedCard = ref(false)
+
+// 修改计算圆的半径的方法
+const calculateRadius = () => {
+  try {
+    const systemInfo = uni.getSystemInfoSync()
+    const screenMin = Math.min(systemInfo.windowWidth, systemInfo.windowHeight)
+    const containerWidth = 750
+    const imageWidth = 90
+    const availableRadius = (containerWidth - imageWidth) / 2
+    circleRadius.value = uni.upx2px(availableRadius) // 转换为px单位
+  } catch (error) {
+    console.error('计算半径时出错:', error)
+    circleRadius.value = uni.upx2px(320)
+  }
+}
+
+// 添加旋转动画方法
+const startRotation = () => {
+  isRotating.value = true
+  rotationSpeed.value = 5 // 初始速度
+  rotationInterval = setInterval(() => {
+    rotationAngle.value = (rotationAngle.value + rotationSpeed.value) % 360
+  }, 50)
+
+  // 8秒后停止旋转并显示选择弹窗
+  setTimeout(() => {
+    stopRotation()
+    showModal.value = true
+  }, rotationDuration)
+}
+
+const stopRotation = () => {
+  isRotating.value = false
+  clearInterval(rotationInterval)
+}
+
+const handleSelect = () => {
+  if (!isRotating.value) {
+    startRotation()
+  } else {
+    stopRotation()
+  }
+}
+
+// 处理抽牌
+const handleDrawCards = (count) => {
+  showModal.value = false
+  selectedCards.value = []
+  
+  // 随机抽取指定数量的卡片
+  const shuffled = [...tarotCards].sort(() => 0.5 - Math.random())
+  selectedCards.value = shuffled.slice(0, count)
+  
+  showCardModal.value = true
+}
+
+// 关闭卡牌展示弹窗
+const closeCardModal = () => {
+  showCardModal.value = false
+  selectedCards.value = []
+}
+
+const handleImageError = (index) => {
+  console.error(`图片加载失败: ${images[index]}`)
+  // 可以在这里添加默认图片替换逻辑
+}
+
+
+
+onMounted(() => {
+  calculateRadius()
+})
+
+onUnmounted(() => {
+  clearInterval(rotationInterval)
+})
+
 const tarotCards = [
   {
     image: '../../../static/zx-images/00愚者.jpg',
@@ -169,48 +311,6 @@ const tarotCards = [
     description: '世界象征完成、和谐和圆满。它代表目标的达成和旅程的结束，是成功的象征。'
   }
 ]
-// 生成图片路径
-const images = imageNames.map(name => `../../../static/zx-images/${name}.jpg`)
-
-const circleRadius = ref(120) // 设置默认半径
-const containerRef = ref(null)
-
-// 计算圆的半径
-const calculateRadius = () => {
-  if (!containerRef.value) return
-  
-  const container = containerRef.value
-  const containerRect = container.getBoundingClientRect()
-  const containerSize = Math.min(containerRect.width * 0.2, containerRect.height * 0.2)
-  const cardSize = { width: 40, height: 60 }
-  
-  circleRadius.value = (containerSize - cardSize.width) / 1.2
-}
-
-// 监听窗口大小变化
-const handleResize = () => {
-  calculateRadius()
-}
-
-onBeforeMount(() => {
-  nextTick(() => {
-    calculateRadius()
-    if (typeof window !== 'undefined') {
-      window.addEventListener('resize', handleResize)
-    }
-  })
-})
-
-onUnmounted(() => {
-  if (typeof window !== 'undefined') {
-    window.removeEventListener('resize', handleResize)
-  }
-})
-
-const handleSelect = () => {
-  // 这里可以添加选牌逻辑
-  console.log('选择卡牌')
-}
 </script>
 
 <style scoped>
@@ -219,112 +319,65 @@ const handleSelect = () => {
   align-items: center;
   justify-content: center;
   width: 100%;
-  height: 100vh;
-  overflow: hidden;
-  padding: 20px;
-  box-sizing: border-box;
+  max-width: 750rpx;
+  height: 850rpx;
   position: relative;
-  background: #f8f8f8;
-  border: 1px solid #000;
-}
-
-.circle-wrapper {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  /* padding: 20px; */
+  margin: 0 auto;
+  background: linear-gradient(135deg, #fce4ec, #f8bbd0);
+  border-radius: 10rpx;
+  box-shadow: 0 8rpx 16rpx rgba(0, 0, 0, 0.1);
 }
 
 .image-wrapper {
   position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 90rpx;
+  height: 140rpx;
+  margin-left: -45rpx;
+  margin-top: -70rpx;
   transform-origin: center;
-  width: 40px;
-  height: 60px;
-  margin-left: -20px;
-  margin-top: -30px;
-  transition: all 0.3s ease;
+  transition: transform 0.3s ease;
 }
 
 .tarot-image {
   width: 100%;
   height: 100%;
+  border-radius: 12rpx;
+  box-shadow: 0 4rpx 8rpx rgba(0, 0, 0, 0.2);
+  border: 2rpx solid #fff;
   object-fit: cover;
-  border-radius: 4px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
-  cursor: pointer;
 }
-
-.image-wrapper:hover .tarot-image {
-  transform: scale(1.5);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-  z-index: 3;
-}
-
 
 .center-button-wrapper {
   position: absolute;
-  top: 50%;
   left: 50%;
+  top: 50%;
   transform: translate(-50%, -50%);
   z-index: 10;
 }
 
 .select-button {
-  position: relative;
-  width: 80px;
-  height: 80px;
+  width: 160rpx;
+  height: 140rpx;
   border-radius: 50%;
-  background: linear-gradient(130deg, #f19fb9, #efa1ba);
-  border: none;
-  box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.1),
-              -5px -5px 10px rgba(255, 255, 255, 0.8);
+  background: linear-gradient(130deg, #ff4081, #f50057);
+  border: 4rpx solid #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8rpx 16rpx rgba(0, 0, 0, 0.2);
+  color: #fff;
+  font-size: 28rpx;
+  font-weight: bold;
   cursor: pointer;
-  overflow: hidden;
-  transition: all 0.3s ease;
-}
-
-.button-text {
-  position: relative;
-  z-index: 2;
-  color: #333;
-  font-size: 16px;
-  font-weight: 500;
-  transition: color 0.3s ease;
+  transition: background 0.3s ease;
 }
 
 .select-button:hover {
-  transform: scale(1.05);
-  box-shadow: 6px 6px 12px rgba(0, 0, 0, 0.12),
-              -6px -6px 12px rgba(240, 5, 181, 0.9);
+  background: linear-gradient(130deg, #f50057, #ff4081);
 }
 
-.select-button:active {
-  transform: scale(0.95);
-  box-shadow: inset 4px 4px 8px rgba(214, 9, 9, 0.1),
-              inset -4px -4px 8px rgba(228, 10, 119, 0.9);
-}
-
-.ripple-effect {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 0;
-  height: 0;
-  background: rgba(255, 255, 255, 0.4);
-  border-radius: 50%;
-  transition: all 0.6s ease;
-}
-
-.select-button:hover .ripple-effect {
-  width: 150%;
-  height: 150%;
-  background: rgba(255, 255, 255, 0);
-}
 .card-list {
   display: flex;
   flex-direction: column; /* 卡片垂直排列 */
@@ -366,4 +419,73 @@ const handleSelect = () => {
   overflow-y: auto; /* 文字过长时可滚动 */
   line-height: 1.5;
 }
+
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+
+.modal-content {
+  background-color: white;
+  padding: 20px;
+  border-radius: 10px;
+  width: 80%;
+  max-width: 300px;
+}
+
+.modal-title {
+  font-size: 18px;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.modal-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.modal-button {
+  padding: 10px;
+  border-radius: 5px;
+  background: linear-gradient(130deg, #ff4081, #f50057);
+  color: white;
+  border: none;
+  font-size: 16px;
+}
+
+.selected-cards {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin: 15px 0;
+}
+
+.selected-card {
+  width: 120rpx;
+  text-align: center;
+}
+
+.selected-card-image {
+  width: 100%;
+  height: 180rpx;
+  border-radius: 5px;
+  margin-bottom: 5px;
+}
+
+.selected-card-title {
+  font-size: 14px;
+  color: #333;
+}
+
 </style>
