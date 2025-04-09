@@ -19,25 +19,44 @@
 			"style": {
 				"navigationBarTitleText": "登录"
 			}
-		},{
+		},
+		{
 			"path": "pages/my/my",
 			"style": {
 				"navigationBarTitleText": "我的"
 			}
-		},{
+		},
+		{
 			"path": "pages/count/count",
 			"style": {
 				"navigationBarTitleText": "算一算"
 			}
+
 		},{
 			"path": "pages/tarot-result/tarot-result",
 			"style": {
 			  "navigationBarTitleText": "塔罗解答"
 			}
 		  },{
+
+		},
+		{
+
 			"path": "pages/star/star",
 			"style": {
 				"navigationBarTitleText": "星盘"
+			}
+		},
+		{
+			"path": "pages/index/IndexPage/LocalArchives",
+			"style": {
+				"navigationBarTitleText": "本地档案"
+			}
+		},
+		{
+			"path": "pages/index/IndexPage/UserAdd",
+			"style": {
+				"navigationBarTitleText": "档案编辑"
 			}
 		}
 
@@ -47,8 +66,9 @@
 		"navigationBarTextStyle": "black",
 		"navigationBarTitleText": "uni-app",
 		"navigationBarBackgroundColor": "#F8F8F8",
-		"backgroundColor": "#F8F8F8",
-	},"tabBar": {
+		"backgroundColor": "#F8F8F8"
+	},
+	"tabBar": {
 		"list": [
 			{
 				"pagePath": "pages/index/index",
