@@ -49,13 +49,48 @@
 			"style": {
 				"navigationBarTitleText": "档案编辑"
 			}
+		},
+		{
+			"path": "pages/index/IndexPage/LookMore",
+			"style": {
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/index/IndexPage/HeartTest",
+			"style": {
+				"navigationBarTitleText": "性格测试"
+			}
+		},
+		{
+			"path": "pages/index/IndexPage/AnswerBook",
+			"style": {
+				"navigationBarTitleText": "答案之书"
+			}
+		},
+		{
+			"path": "pages/index/IndexPage/Tree",
+			"style": {
+				"navigationBarTitleText": "树洞"
+			}
+		},
+		{
+			"path": "pages/index/IndexPage/TreeHistory",
+			"style": {
+				"navigationBarTitleText": "我的倾诉"
+			}
+		},
+		{
+			"path": "pages/index/IndexPage/dollas",
+			"style": {
+				"navigationBarTitleText": "解忧娃娃"
+			}
 		}
-
 
 	],
 	"globalStyle": {
 		"navigationBarTextStyle": "black",
-		"navigationBarTitleText": "uni-app",
+		"navigationBarTitleText": "",
 		"navigationBarBackgroundColor": "#F8F8F8",
 		"backgroundColor": "#F8F8F8"
 	},
