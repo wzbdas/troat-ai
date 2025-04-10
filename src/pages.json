@@ -31,17 +31,24 @@
 			"style": {
 				"navigationBarTitleText": "算一算"
 			}
-		},
-		{
+
+		},{
 			"path": "pages/tarot-result/tarot-result",
 			"style": {
-				"navigationBarTitleText": "塔罗解答"
+			  "navigationBarTitleText": "塔罗解答"
 			}
-		},
+		  },
 		{
+
 			"path": "pages/star/star",
 			"style": {
 				"navigationBarTitleText": "星盘"
+			}
+		},
+		{
+			"path": "pages/star/zxx-detail",
+			"style": {
+				"navigationBarTitleText": "塔罗详情"
 			}
 		},
 		{

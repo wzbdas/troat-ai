@@ -1,5 +1,4 @@
 <template>
-
   <view class="tarot-shuffle">
     <!-- 塔罗牌容器 -->
     <view class="card-container">
