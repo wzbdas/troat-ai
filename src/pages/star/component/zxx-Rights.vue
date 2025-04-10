@@ -1,6 +1,6 @@
 <template>
-  <div class="rights-container">
-    <div 
+  <view class="rights-container">
+    <view 
       v-for="(image, index) in images" 
       :key="index"
       class="card-wrapper"
@@ -9,39 +9,65 @@
         animationDelay: `${index * 0.1}s`
       }"
     >
-      <div class="card">
-        <div class="card-back">
+      <view class="card">
+        <view class="card-back">
           <!-- 添加图片元素替代背景图 -->
           <image class="back-image" src="/static/zxqzimg/背面A.jpg"></image>
-        </div>
-        <div class="card-front">
-          <img 
+        </view>
+        <view class="card-front">
+          <image 
             :src="image"
             class="tarot-image"
+            mode="aspectFill"
             :alt="`Tarot card ${imageNames[index]}`"
-          >
-        </div>
-      </div>
-    </div>
-  </div>
+          />
+        </view>
+      </view>
+    </view>
+    
+    <!-- 添加测一测按钮 -->
+    <view class="test-button-wrapper">
+      <button class="test-button" @tap="handleRandomCard">测一测</button>
+    </view>
+    
+    <!-- 抽卡结果弹窗 -->
+    <view class="card-modal" v-if="showCardModal" @tap.stop="closeModal">
+      <view class="modal-content" @tap.stop>
+        <view class="modal-header">
+          <text class="modal-title">你抽到的卡牌</text>
+          <text class="modal-close" @tap="closeModal">×</text>
+        </view>
+        <view class="selected-card">
+          <image 
+            :src="selectedCard.image" 
+            mode="aspectFill" 
+            class="selected-card-image"
+          />
+          <text class="selected-card-title">{{selectedCard.title}}</text>
+          <text class="selected-card-description">{{selectedCard.description}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
   <Intro />
-  <div class="card-list">
-    <div class="card-info" v-for="(card, index) in tarotCards" :key="index">
-    <div >
-      <img class="card-image" :src="card.image" :alt="card.title">
-    </div>
-    <div class="card-text">
-      <p class="card-title">{{ card.title }}</p>
-      <p class="card-description">
+  <view class="card-list">
+    <view class="card-info" v-for="(card, index) in tarotCards" :key="index">
+    <view>
+      <image class="card-image" :src="card.image" :alt="card.title" mode="aspectFill"></image>
+    </view>
+    <view class="card-text">
+      <text class="card-title">{{ card.title }}</text>
+      <text class="card-description">
         {{ card.description }}
-      </p>
-    </div>
-  </div>
-  </div>
+      </text>
+    </view>
+  </view>
+  </view>
 </template>
 
 <script setup>
 import Intro from './zxx-Intro.vue'
+import { ref } from 'vue'
 // 注意：先定义imageNames，再使用它
 const imageNames = [
   '权杖2',
@@ -60,10 +86,10 @@ const imageNames = [
   '权杖ACE'
 ]
 
-// 恢复原来的图片路径引用方式
+// 图片路径引用方式
 const images = imageNames.map(name => `../../../static/zxqzimg/${name}.jpg`)
 
-// 恢复原来的tarotCards数据中的图片路径
+// tarotCards数据中的图片路径
 const tarotCards = [
   {
     image: '../../../static/zxqzimg/权杖2.jpg',
@@ -136,20 +162,140 @@ const tarotCards = [
     description: '权杖ACE象征新的开始、灵感和创造力。这张牌代表新机会的种子和潜在的成长。它鼓励你抓住新的想法，开始新的项目，并以热情和活力追求你的目标。'
   }
 ]
+
+// 添加抽卡相关的响应式变量
+const showCardModal = ref(false)
+const selectedCard = ref({})
+
+// 随机抽取卡牌的方法
+const handleRandomCard = () => {
+  // 随机选择一张卡牌
+  const randomIndex = Math.floor(Math.random() * tarotCards.length)
+  selectedCard.value = tarotCards[randomIndex]
+  
+  // 显示弹窗
+  showCardModal.value = true
+}
+
+// 关闭弹窗
+const closeModal = () => {
+  showCardModal.value = false
+}
 </script>
 
 <style scoped>
 .rights-container {
   position: relative;
   width: 100%;
-  height: 50vh; /* 增加高度 */
+  height: 50vh;
   display: flex;
   justify-content: center;
-  align-items: center; /* 已经是居中对齐 */
+  align-items: center;
   overflow: hidden;
   background-color: pink;
-  border: 2px solid black;
-  padding: 0; /* 移除底部内边距 */
+  border: 2rpx solid black;
+  padding: 0;
+}
+
+.test-button-wrapper {
+  position: absolute;
+  bottom: 20rpx;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+}
+.test-button {
+  width: 160rpx;
+  height: 80rpx;
+  border-radius: 40rpx;
+  background: linear-gradient(130deg, #ff4081, #f50057);
+  border: 4rpx solid #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8rpx 16rpx rgba(0, 0, 0, 0.2);
+  color: #fff;
+  font-size: 28rpx;
+  font-weight: bold;
+  transition: all 0.3s ease;
+}
+
+.test-button:active {
+  transform: scale(0.95);
+  box-shadow: 0 4rpx 8rpx rgba(0, 0, 0, 0.3);
+}
+
+.card-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+.modal-content {
+  background-color: white;
+  padding: 30rpx;
+  border-radius: 20rpx;
+  width: 80%;
+  max-width: 600rpx;
+  position: relative;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20rpx;
+}
+
+.modal-title {
+  font-size: 36rpx;
+  font-weight: bold;
+  text-align: center;
+  flex: 1;
+}
+
+.modal-close {
+  font-size: 48rpx;
+  color: #999;
+  width: 60rpx;
+  height: 60rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+.selected-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20rpx;
+}
+
+.selected-card-image {
+  width: 200rpx;
+  height: 320rpx;
+  border-radius: 10rpx;
+  margin-bottom: 20rpx;
+  box-shadow: 0 8rpx 16rpx rgba(0, 0, 0, 0.2);
+}
+
+.selected-card-title {
+  font-size: 32rpx;
+  font-weight: bold;
+  margin-bottom: 15rpx;
+}
+
+.selected-card-description {
+  font-size: 28rpx;
+  text-align: center;
+  line-height: 1.5;
+  color: #333;
 }
 
 .card-wrapper {
@@ -166,12 +312,12 @@ const tarotCards = [
 
 .card {
   position: relative;
-  width: 60px;
-  height: 100px;
+  width: 160rpx;
+  height: 220rpx;
   transform-style: preserve-3d;
   transition: transform 0.6s;
   /* 添加阴影增强视觉效果 */
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 6rpx 12rpx rgba(0, 0, 0, 0.3);
 }
 
 .card-front, .card-back {
@@ -179,8 +325,8 @@ const tarotCards = [
   width: 100%;
   height: 100%;
   backface-visibility: hidden;
-  border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  border-radius: 8rpx;
+  box-shadow: 0 4rpx 8rpx rgba(0, 0, 0, 0.2);
 }
 
 .card-front {
@@ -196,14 +342,14 @@ const tarotCards = [
 .back-image {
   width: 100%;
   height: 100%;
-  border-radius: 8px;
+  border-radius: 8rpx;
 }
 
 .tarot-image {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  border-radius: 8px;
+  border-radius: 8rpx;
 }
 
 /* 修改动画，使卡牌从左侧移动到中心 */
@@ -230,34 +376,61 @@ const tarotCards = [
 }
 .card-info {
   display: flex;
-  flex-direction: row; /* 明确设置为横向排列 */
-  justify-content: flex-start; /* 内容左对齐 */
-  align-items: flex-start; /* 垂直方向顶部对齐 */
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: flex-start;
   background-image: linear-gradient(to right, #ff4ca8d9, #e592c7c1);
-  margin-top: 10px;
-  border-radius: 10px;
+  margin-top: 20rpx;
+  margin-bottom: 20rpx;
+  border-radius: 16rpx;
+  width: 92%;
+  padding: 15rpx;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.1);
 }
 .card-image{
-  width: 30vw;
-  height: 35vh;
-  margin: 10px;
-  border-radius: 10px;
+  width: 200rpx;
+  height: 300rpx;
+  margin: 10rpx;
+  border-radius: 10rpx;
+  box-shadow: 0 4rpx 8rpx rgba(0, 0, 0, 0.2);
+}
+
+.card-text {
+  flex: 1;
+  padding: 10rpx;
+  display: flex;
+  flex-direction: column;
 }
 
 .card-title{
-  font-size: 24px;
+  font-size: 32rpx;
   font-weight: bold;
-  margin-bottom: 15px;
-  margin-left: 5px;
+  margin-bottom: 15rpx;
+  margin-left: 5rpx;
+  display: block;
+  color: #333;
 }
 
 .card-description{
-  font-size: 16px;
-  margin-bottom: 10px;
-  margin-right: 10px;
-  text-align: justify; /* 两端对齐，增强阅读体验 */
-  max-height: 150px; /* 限制描述区域高度 */
-  overflow-y: auto; /* 文字过长时可滚动 */
-  line-height: 1.5;
+  font-size: 28rpx;
+  margin-bottom: 10rpx;
+  margin-right: 10rpx;
+  text-align: justify;
+  max-height: 220rpx;
+  overflow-y: auto;
+  line-height: 1.6;
+  display: block;
+  color: #444;
+  padding-right: 10rpx;
+}
+
+/* 添加滚动条样式 */
+.card-description::-webkit-scrollbar {
+  width: 4rpx;
+}
+
+.card-description::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 76, 141, 0.5);
+  border-radius: 4rpx;
 }
 </style>

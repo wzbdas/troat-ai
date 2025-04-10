@@ -9,16 +9,18 @@
     </view>
     <!-- #ifdef MP-WEIXIN -->
     <view class="zxx-tab">
-      <view class="tab-list">
-        <view 
-          v-for="(item, index) in tabItems" 
-          :key="index"
-          :class="['tab-item', { active: currentTab === index }]"
-          @tap="handleTabClick(index)"
-        >
-          {{ item }}
+      <scroll-view scroll-x="true" class="scroll-view">
+        <view class="tab-list">
+          <view 
+            v-for="(item, index) in tabItems" 
+            :key="index"
+            :class="['tab-item', { active: currentTab === index }]"
+            @tap="handleTabClick(index)"
+          >
+            {{ item }}
+          </view>
         </view>
-      </view>
+      </scroll-view>
     </view>
     
     <!-- 根据当前选中的tab显示对应组件 -->
@@ -40,13 +42,11 @@
             :key="index"
             :class="['h5-tab-item', { 'h5-tab-active': currentH5Tab === index }]"
             @click="handleH5TabClick(index)"
-            :style="{ backgroundColor: currentH5Tab === index ? 'pink' : 'transparent' }"
           >
             {{ item }}
           </view>
         </view>
       </view>
-      
     </view>
     <view class="h5-component-container">
         <Taro v-if="currentH5Tab === 0" />
@@ -139,18 +139,22 @@ const handleH5TabClick = (index) => {
 }
 
 .zxx-tab {
-  padding: 0 30rpx;
   width: 100%;
-  overflow-x: auto;
+  position: relative;
+}
+
+.scroll-view {
+  width: 100%;
+  white-space: nowrap;
 }
 
 .tab-list {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   height: 80rpx;
   border-bottom: 1rpx solid #f5f5f5;
-  width: max-content;
-  min-width: 100%;
+  padding: 0 30rpx;
+  padding-right: 60rpx; /* 增加右侧内边距，确保最后一项完全显示 */
 }
 
 .tab-item {
@@ -163,6 +167,7 @@ const handleH5TabClick = (index) => {
   align-items: center;
   white-space: nowrap;
   transition: color 0.3s ease;
+  flex-shrink: 0; /* 防止项目被压缩 */
 }
 
 .tab-item.active {
@@ -194,7 +199,6 @@ const handleH5TabClick = (index) => {
   width: 100%;
   max-width: 1800rpx;
   margin: 0 auto;
-  border: 1rpx solid red;
 }
 
 .h5-tab-container {
@@ -203,22 +207,51 @@ const handleH5TabClick = (index) => {
   justify-content: center;
   padding: 20rpx;
   background: #fff;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.05);
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
 .h5-tab-wrapper {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   justify-content: center;
-  gap: 20rpx;
-  max-width: 900rpx;
+  gap: 30rpx;
+  max-width: 1200rpx;
+  width: 100%;
+}
+
+.h5-tab-item {
+  padding: 16rpx 30rpx;
+  font-size: 30rpx;
+  color: #666;
+  background-color: #f8f8f8;
+  border-radius: 40rpx;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  text-align: center;
+  min-width: 160rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
+}
+.h5-tab-item:hover {
+  transform: translateY(-2rpx);
+  box-shadow: 0 6rpx 16rpx rgba(0, 0, 0, 0.1);
+}
+.h5-tab-active {
+  background-color: #ffd1e0 !important;
+  color: #ff4c8d;
+  font-weight: bold;
+  transform: scale(1.05);
+  box-shadow: 0 8rpx 20rpx rgba(255, 76, 141, 0.2);
 }
 
 .h5-component-container {
   width: 100%;
-  height: 100%;
-  background-color: #9bd8ee;
-}
-.h5-tab-active {
-  background-color: pink;
+  min-height: calc(100vh - 200rpx);
+  background-color: #f5f9fc;
+  padding: 20rpx;
 }
 </style>

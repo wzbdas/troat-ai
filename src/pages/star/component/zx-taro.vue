@@ -3,46 +3,43 @@
     <!-- 轮播图部分 -->
     <view class="swiper-container">
       <swiper class="swiper" :indicator-dots="true" :autoplay="true" :interval="3000" :duration="500" :circular="true" indicator-active-color="#8957e5">
-        <swiper-item >
+        <swiper-item v-for="(item, index) in swiperList" :key="index">
           <view class="swiper-item">
-            <img src="../../../static/zximgh5/艾莎公主.jpg" class="taro-image" style="width: 100%; height: 100%;" />
+            <img :src="item.imgSrc" class="taro-image" style="width: 100%; height: 100%;" />
             <view class="swiper-title">
-              <text class="title-tag">塔罗运势</text>
-              <text class="title-text">爱莎公主12星座一周塔罗运势</text>
-              <text class="title-date">(4.7-4.13)</text>
-            </view>
-          </view>
-        </swiper-item>
-        <swiper-item >
-          <view class="swiper-item">
-            <img src="../../../static/zximgh5/艾莎公主1.jpg" class="taro-image" style="width: 100%; height: 100%;" />
-            <view class="swiper-title">
-              <text class="title-tag">塔罗运势</text>
-              <text class="title-text">爱莎公主12星座一周塔罗运势</text>
-              <text class="title-date">(4.7-4.13)</text>
-            </view>
-          </view>
-        </swiper-item>
-        <swiper-item >
-          <view class="swiper-item">
-            <img src="../../../static/zximgh5/爱莎公主2.jpg" class="taro-image" style="width: 100%; height: 100%;" />
-            <view class="swiper-title">
-              <text class="title-tag">塔罗运势</text>
-              <text class="title-text">爱莎公主12星座一周塔罗运势</text>
-              <text class="title-date">(4.7-4.13)</text>
+              <text class="title-tag">{{ item.tag }}</text>
+              <text class="title-text">{{ item.title }}</text>
+              <text class="title-date">{{ item.date }}</text>
             </view>
           </view>
         </swiper-item>
       </swiper>
     </view>
   </view>
-  <intro/>
 </template>
 
 <script setup>
 import { ref } from 'vue'
-import Intro from './zxx-Intro.vue'
-
+const swiperList = ref([
+  {
+    imgSrc: 'src/static/zximgh5/艾莎公主.jpg',
+    tag: '塔罗运势',
+    title: '爱莎公主12星座一周塔罗运势',
+    date: '(4.7-4.13)'
+  },
+  {
+    imgSrc: 'src/static/zximgh5/艾莎公主1.jpg',
+    tag: '塔罗运势',
+    title: '爱莎公主12星座一周塔罗运势',
+    date: '(4.7-4.13)'
+  },
+  {
+    imgSrc: 'src/static/zximgh5/爱莎公主2.jpg',
+    tag: '塔罗运势',
+    title: '爱莎公主12星座一周塔罗运势',
+    date: '(4.7-4.13)'
+  }
+])
 </script>
 
 <style scoped>
