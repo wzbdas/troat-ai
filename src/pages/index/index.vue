@@ -6,8 +6,9 @@
         <image src="../../static/index/profile.jpg" mode="aspectFit" class="zodiac-icon"></image>
       </view>
       <view class="user-detail">
-        <text class="user-name">自己...</text>
-        <text class="user-zodiac">双鱼座·2000-03-01</text>
+        <text class="user-name">{{ userName }}</text>
+        <text class="user-zodiac">{{ userBirthday }}</text>
+        <text class="user-zodiac">{{ userArea }}</text>
       </view>
       <view class="user-actions">
         <button class="edit-btn"
@@ -67,7 +68,7 @@
       </view>
       
       <view class="card-footer">
-        <text class="view-more">查看更多</text>
+        <text class="view-more" @click="navigateToLookMore">查看更多</text>
       </view>
     </view>
 
@@ -76,15 +77,15 @@
       <view class="nav-row">
         <view class="nav-item">
           <image src="../../static/index/heartTest.png" mode="aspectFit" class="nav-icon"></image>
-          <text class="nav-text">心理测试</text>
+          <text class="nav-text"  @click="navigateToHeartTest">性格测试</text>
         </view>
         <view class="nav-item">
           <image src="../../static/index/answerBook.png" mode="aspectFit" class="nav-icon"></image>
-          <text class="nav-text">答案之书</text>
+          <text class="nav-text" @click="navigateToAnswerBook">答案之书</text>
         </view>
         <view class="nav-item">
           <image src="../../static/index/taro.png" mode="aspectFit" class="nav-icon"></image>
-          <text class="nav-text">塔罗牌</text>
+          <text class="nav-text" @click="navigateToTarot">塔罗牌</text>
         </view>
         <view class="nav-item">
           <image src="../../static/index/Maya.png" mode="aspectFit" class="nav-icon"></image>
@@ -105,7 +106,7 @@
           <view class="card-content">
             <text class="card-title">树洞</text>
             <text class="card-subtitle">倾诉秘密之地</text>
-            <view class="card-arrow">→</view>
+            <view class="card-arrow" @click="navigateToTree">→</view>
           </view>
         </view>
         
@@ -113,7 +114,7 @@
           <view class="card-content">
             <text class="card-title">解忧娃娃</text>
             <text class="card-subtitle">封印你的烦恼</text>
-            <view class="card-arrow">→</view>
+            <view class="card-arrow" @click="navigateToDollas">→</view>
           </view>
         </view>
       </view>
@@ -150,7 +151,32 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
+
+// 用户信息
+const userName = ref('自己...')
+const userBirthday = ref('2000-03-01')
+const userArea = ref(' 北京朝阳区')
+
+// 监听档案选择更新
+onMounted(() => {
+  // 从本地存储读取用户信息
+  const storedUser = uni.getStorageSync('userInfo')
+  if (storedUser) {
+    userName.value = storedUser.name
+    userBirthday.value = storedUser.birthday
+    userArea.value = storedUser.area
+  }
+
+  uni.$on('updateUserInfo', (user) => {
+    userName.value = user.name
+    userBirthday.value = user.birthday
+    userArea.value = user.area
+    // 保存用户信息到本地存储
+    uni.setStorageSync('userInfo', user)
+  })
+})
+
 import type { _ViewProps, _TextProps, _ImageProps, _ButtonProps } from '@dcloudio/types'
 
 // Declare component types for uni-app
@@ -168,7 +194,52 @@ const fortuneIndex = ref(85)
 
 const navigateToLocalArchives = () => {
   uni.navigateTo({
-    url: '/pages/index/IndexPage/LocalArchives'
+    url: '/pages/index/IndexPage/LocalArchives',
+    animationType: 'pop-in',
+    animationDuration: 0
+  })
+}
+const navigateToLookMore = () => {
+  uni.navigateTo({
+    url: '/pages/index/IndexPage/LookMore',
+    animationType: 'pop-in',
+    animationDuration: 0
+  })
+}
+const navigateToHeartTest = () => {
+  uni.navigateTo({
+    url: '/pages/index/IndexPage/HeartTest',
+    animationType: 'pop-in',
+    animationDuration: 0
+  })  
+}
+const navigateToAnswerBook = () => {
+  uni.navigateTo({
+    url: '/pages/index/IndexPage/AnswerBook',
+    animationType: 'pop-in',
+    animationDuration: 0
+  }) 
+}
+const navigateToTarot = () => {
+  uni.switchTab({
+    url: '../count/count',
+    animationType: 'pop-in',
+    animationDuration: 0
+  })
+}
+const navigateToTree = () => {
+  uni.navigateTo({
+    url: '/pages/index/IndexPage/Tree',
+    animationType: 'pop-in',
+    animationDuration: 0
+  }) 
+}
+
+const navigateToDollas = () => {
+  uni.navigateTo({
+    url: '/pages/index/IndexPage/dollas',
+    animationType: 'pop-in',
+    animationDuration: 0
   })
 }
 </script>

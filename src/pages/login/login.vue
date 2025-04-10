@@ -1,4 +1,5 @@
 <template>
+
   <div class="login-container">
     <!-- #ifdef H5 -->
     <div class="h5-login">
@@ -12,7 +13,7 @@
           placeholder="请输入11位手机号"
           v-model="phone"
           maxlength="11"
-        >
+       / >
       </div>
 
       <!-- 验证码输入 -->
@@ -477,5 +478,8 @@ const goBack = () => {
   color: #FF69B4;
 }
 </style>
+
+
+
 
 

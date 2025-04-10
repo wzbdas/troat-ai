@@ -26,43 +26,46 @@
       <!-- 出生日期 -->
       <view class="form-item">
         <text class="label">出生日期 (阳历)</text>
-        <view class="picker-container" @click="showDatePicker = true">
-          <text class="picker-value">{{ userForm.birthday || '2000-01-01 12:00' }}</text>
-          <text class="picker-arrow">></text>
+        <view class="picker-container">
+          <uni-datetime-picker
+            type="datetime"
+            :value="userForm.birthday"
+            @change="(e) => onDateChange(e)"
+            :clear-icon="false"
+            :border="false"
+          />
         </view>
       </view>
       
       <!-- 出生时区 -->
       <view class="form-item">
         <text class="label">出生时区</text>
-        <view class="picker-container" @click="showTimezonePicker = true">
-          <text class="picker-value">{{ userForm.timeZone || '东8区' }}</text>
-          <text class="picker-arrow">></text>
+        <view class="picker-container">
+          <text class="picker-value">{{ userForm.timeZone }}</text>
         </view>
-        <text class="helper-text">无法选择?</text>
+        <text class="helper-text">默认东8区</text>
       </view>
     
       
       <!-- 出生地 -->
       <view class="form-item">
         <text class="label">出生地</text>
-        <view class="picker-container" @click="showLocationPicker = true">
-          <text class="picker-value">{{ userForm.area || '北京北京东城' }}</text>
-          <text class="picker-arrow">></text>
-        </view>
+        <input type="text" v-model="userForm.area" placeholder="请输入出生地" class="input-field" />
       </view>
-
+         <!-- 保存按钮 -->
+      <view class="save-button" @click="saveProfile">
+        <text>保存档案</text>
+      </view>
     </view>
     
-    <!-- 保存按钮 -->
-    <view class="save-button" @click="saveProfile">
-      <text>保存档案</text>
-    </view>
+ 
   </view>
 </template>
 
 <script setup lang="ts">
 import { ref, reactive } from 'vue';
+// 修改导入路径，使用相对路径
+import { addUser } from '../../../servers/index'
 
 // 定义档案表单接口
 interface ProfileForm {
@@ -82,20 +85,68 @@ const userForm = reactive<ProfileForm>({
   area: '北京北京东城',
 });
 
-// 控制各选择器的显示状态
-const showDatePicker = ref(false);
-const showTimezonePicker = ref(false);
-const showLocationPicker = ref(false);
+// 初始化区域数组，用于地区选择器
+const regionArray = ref([0, 0, 0])
+// 日期选择事件处理
+const onDateChange = (value: any) => {
+  if (value) {
+    userForm.birthday = value;
+  }
+};
+
+
 
 
 // 保存档案
-const saveProfile = () => {
-  // 这里可以调用API提交表单数据
-  console.log('提交的档案数据:', userForm);
-  uni.showToast({
-    title: '档案保存成功',
-    icon: 'success'
-  });
+const saveProfile = async () => {
+  // 表单验证
+  if (!userForm.name) {
+    uni.showToast({
+      title: '请输入昵称',
+      icon: 'none'
+    });
+    console.log('昵称为空');
+    return;
+  }
+
+  if (!userForm.birthday) {
+    uni.showToast({
+      title: '请选择出生日期',
+      icon: 'none'
+    });
+    console.log('出生日期为空');
+    return;
+  }
+
+  try {
+    // 调用添加用户接口
+    const res = await addUser(userForm);
+    console.log('API 响应:', res);
+    if ( res.data.code === 200) {
+      uni.showToast({
+        title: '档案保存成功',
+        icon: 'success'
+      });
+      // 保存成功后，跳转到档案列表页
+      setTimeout(() => {
+        uni.navigateTo({
+          url: '/pages/index/IndexPage/LocalArchives',
+        });
+      }, 1500);
+    } else {
+      uni.showToast({
+        title: res.data.message || '保存失败，请重试',
+        icon: 'error'
+      });
+      console.log('保存失败:', res.data.message);
+    }
+  } catch (error) {
+    uni.showToast({
+      title: '保存失败，请重试',
+      icon: 'error'
+    });
+    console.error('保存档案失败:', error);
+  }
 };
 </script>
 
@@ -136,6 +187,7 @@ const saveProfile = () => {
   align-items: center;
   padding: 15px 0;
   border-bottom: 1px solid #f0f0f0;
+  position: relative;
 }
 
 .form-item:last-child {
@@ -172,6 +224,15 @@ const saveProfile = () => {
   height: 40px;
   font-size: 16px;
   color: #333;
+  padding: 0 10px;
+  border: 1px solid #eee;
+  border-radius: 4px;
+  background-color: #fff;
+}
+
+.input-field:focus {
+  border-color: #f4b9c1;
+  outline: none;
 }
 
 .radio-group {
@@ -191,16 +252,21 @@ const saveProfile = () => {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  position: relative;
+  min-height: 40px;
 }
 
 .picker-value {
   font-size: 16px;
   color: #333;
+  flex: 1;
+  padding-right: 10px;
 }
 
 .picker-arrow {
   color: #ccc;
   font-size: 16px;
+  margin-left: 5px;
 }
 
 .helper-text {
@@ -217,18 +283,20 @@ const saveProfile = () => {
 }
 
 .save-button {
-  position: fixed;
-  left: 15px;
-  right: 15px;
-  bottom: 20px;
   height: 50px;
   line-height: 50px;
   text-align: center;
-  background-color: #f8a5c2;
+  background-color: #f4b9c1;
   color: #fff;
   border-radius: 25px;
   font-size: 16px;
   font-weight: 500;
   z-index: 100;
+  transition: all 0.3s ease;
+}
+
+.save-button:active {
+  transform: scale(0.98);
+  background-color: #e6a8b0;
 }
 </style>

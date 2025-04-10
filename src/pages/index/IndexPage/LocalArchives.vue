@@ -29,37 +29,85 @@
     </view>
 
     <!-- 档案列表 -->
-    <view class="archives-list">
-      <view class="archive-item">
+    <scroll-view class="archives-list" scroll-y >
+      <view v-if="userList.length === 0" class="no-data">
+        暂无档案数据
+      </view>
+      <view v-else class="archive-item" v-for="(user, index) in userList" :key="index">
         <view class="item-left">
-          <text class="gender-icon">♀</text>
-          <text class="archive-info">明星 1997-09-17 08:30 北京,北京东城</text>
+          <radio :checked="selectedArchive===user.id" @click="selectedArchive=user.id" class="archive-radio" />
+          <text class="gender-icon">{{ user.sex === '男' ? '♀' : '♂' }}</text>
+          <text class="archive-info">{{ user.name }}{{ user.birthday }} {{ user.area }}</text>
         </view>
         <view class="item-right">
-          <text class="demo-tag">示例</text>
+          <text class="demo-tag" v-if="user.isDemo">示例</text>
           <button class="edit-btn">编辑</button>
         </view>
       </view>
-    </view>
+    </scroll-view>
 
 
     <!-- 底部操作栏 -->
     <view class="bottom-bar">
-      <text class="archive-count">共 3 个档案，其中 0 个未同步</text>
+      <text class="archive-count">共 {{ userList.length }} 个档案，其中 0 个未同步</text>
       <view class="action-buttons">
         <button class="add-btn"
            @click="navigateToUserAdd"
           >+ 新增</button>
-        <button class="confirm-btn">确定选择</button>
+        <button class="confirm-btn" @click="confirmSelection">确定选择</button>
       </view>
     </view>
   </view>
 </template>
 
 <script setup lang="ts">
+
+import { ref, onMounted } from 'vue'
+// 修改导入路径，使用相对路径
+import { getUserList } from '../../../servers/index'
+
+// 定义用户列表响应式数据
+const userList = ref([])
+const selectedArchive = ref(null)
+
+// 获取用户列表数据
+const fetchUserList = async () => {
+ const res = await getUserList()
+ console.log(res);
+ 
+ if(res.data.code == 200){
+    userList.value = res.data.data
+    console.log(userList.value)
+  }else{
+    console.log('获取用户列表失败')
+  }
+ }
+
+// 确认选择按钮点击事件
+const confirmSelection = () => {
+  if (selectedArchive.value) {
+    const selectedUser = userList.value.find(user => user.id === selectedArchive.value)
+    if (selectedUser) {
+      uni.$emit('updateUserInfo', selectedUser)
+      uni.navigateBack()
+    }
+  } else {
+    uni.showToast({
+      title: '请选择一个档案',
+      icon: 'none'
+    })
+  }
+}
+
+// 页面加载时获取数据
+onMounted(() => {
+  fetchUserList()
+})
+
 const goBack = () => {
   uni.navigateBack()
 }
+
 const navigateToUserAdd = () => {
   uni.navigateTo({
     url: '/pages/index/IndexPage/UserAdd'
@@ -155,10 +203,17 @@ const navigateToUserAdd = () => {
   color: #666;
   font-size: 28rpx;
 }
-
+page {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
 .archives-list {
   background-color: #fff;
   margin-top: 20rpx;
+  margin-bottom: 20rpx;
+  width: 100%;
+  height: 100%;
 }
 
 .archive-item {
@@ -200,7 +255,7 @@ const navigateToUserAdd = () => {
 }
 
 .edit-btn {
-  padding: 4rpx 20rpx;
+  width: 120rpx;
   background-color: #FFB6C1;
   color: #fff;
   border-radius: 30rpx;
@@ -278,6 +333,12 @@ const navigateToUserAdd = () => {
   background-color: #FFB6C1;
   color: #fff;
   border-radius: 8rpx;
+  font-size: 28rpx;
+}
+.no-data {
+  text-align: center;
+  padding: 40rpx;
+  color: #999;
   font-size: 28rpx;
 }
 </style>
