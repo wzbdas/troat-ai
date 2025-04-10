@@ -50,6 +50,7 @@
       <!-- 出生地 -->
       <view class="form-item">
         <text class="label">出生地</text>
+
         <input type="text" v-model="userForm.area" placeholder="请输入出生地" class="input-field" />
       </view>
          <!-- 保存按钮 -->
@@ -59,13 +60,16 @@
     </view>
     
  
+
   </view>
 </template>
 
 <script setup lang="ts">
 import { ref, reactive } from 'vue';
+
 // 修改导入路径，使用相对路径
 import { addUser } from '../../../servers/index'
+
 
 // 定义档案表单接口
 interface ProfileForm {
@@ -84,6 +88,7 @@ const userForm = reactive<ProfileForm>({
   timeZone: '东8区',
   area: '北京北京东城',
 });
+
 
 // 初始化区域数组，用于地区选择器
 const regionArray = ref([0, 0, 0])
@@ -147,6 +152,7 @@ const saveProfile = async () => {
     });
     console.error('保存档案失败:', error);
   }
+
 };
 </script>
 
@@ -187,7 +193,9 @@ const saveProfile = async () => {
   align-items: center;
   padding: 15px 0;
   border-bottom: 1px solid #f0f0f0;
+
   position: relative;
+
 }
 
 .form-item:last-child {
@@ -224,6 +232,7 @@ const saveProfile = async () => {
   height: 40px;
   font-size: 16px;
   color: #333;
+
   padding: 0 10px;
   border: 1px solid #eee;
   border-radius: 4px;
@@ -233,6 +242,7 @@ const saveProfile = async () => {
 .input-field:focus {
   border-color: #f4b9c1;
   outline: none;
+
 }
 
 .radio-group {

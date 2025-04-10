@@ -1,107 +1,150 @@
 
-
 <template>
-  <div class="my">
+  <view class="my">
     <!-- 头部登录/注册区域 -->
-    <div class="header" @click="goToLogin">
-      <div class="avatar"><img class="avatar-img" src="../../img/7.png" alt=""></div>
-      <div class="login-text">登录/注册</div>
-    </div>
+    <view class="header" @tap="goToLogin" v-if="!hasToken">
+      <view class="avatar"><image class="avatar-img" src="../../img/7.png" mode="aspectFill"></image></view>
+      <view class="login-text">登录/注册</view>
+    </view>
+    <!-- 修改模板部分 -->
+    <!-- 修改已登录的头部部分，添加点击事件 -->
+    <view v-else class="header" @tap="goToProfile">
+      <view class="avatar">
+        <image class="avatar-img" src="../../img/1.jpg" mode="aspectFill"></image>
+      </view>
+      <view class="user-info">
+    <text class="nickname">{{ userList[0]?.name || '未设置昵称' }}</text><br>
+    <text class="constellation">日{{ formatSign(userList[0]?.sunsign) }}·月{{ formatSign(userList[0]?.moonsign) }}·升{{ formatSign(userList[0]?.risesign) }}</text>
+  </view>
+    </view>
 
-    <!-- 星币卡片 - 登录后显示 -->
-    <div class="star-card" v-if="hasToken">
-      <div class="star-header">
-        <div class="star-amount">
+    <!-- 星币卡片部分 -->
+    <view class="star-card" v-if="hasToken">
+      <view class="star-header">
+        <view class="star-amount">
           <text class="amount">600</text>
           <text class="label">我的星币</text>
-          <text class="info-icon" @click="showStarInfo">?</text>
-        </div>
-        <button class="recharge-btn" @click="handleRecharge">星币充值</button>
-      </div>
+          <text class="info-icon" @tap="showStarInfo">?</text>
+        </view>
+        <button class="recharge-btn" @tap="handleRecharge">星币充值</button>
+      </view>
 
-      <div class="task-list">
-        <div class="task-item">
-          <div class="task-left">
-            <div class="task-icon sign">签</div>
-            <div class="task-info">
-              <div class="task-name">签到</div>
-              <div class="task-reward">奖励50星币</div>
-            </div>
-          </div>
-          <div class="task-status completed">已完成</div>
-        </div>
+      <view class="task-list">
+        <view class="task-item">
+          <view class="task-left">
+            <view class="task-icon sign">签</view>
+            <view class="task-info">
+              <text class="task-name">签到</text>
+              <text class="task-reward">奖励50星币</text>
+            </view>
+          </view>
+          <text class="task-status completed">已完成</text>
+        </view>
 
-        <div class="task-item">
-          <div class="task-left">
-            <div class="task-icon share">分</div>
-            <div class="task-info">
-              <div class="task-name">分享</div>
-              <div class="task-reward">奖励50星币 | 今日剩余0次</div>
-            </div>
-          </div>
-          <div class="task-status completed">已完成</div>
-        </div>
+        <view class="task-item">
+          <view class="task-left">
+            <view class="task-icon share">分</view>
+            <view class="task-info">
+              <text class="task-name">分享</text>
+              <text class="task-reward">奖励50星币 | 今日剩余0次</text>
+            </view>
+          </view>
+          <text class="task-status completed">已完成</text>
+        </view>
 
-        <div class="task-item">
-          <div class="task-left">
-            <div class="task-icon video">视</div>
-            <div class="task-info">
-              <div class="task-name">视频广告</div>
-              <div class="task-reward">奖励50星币 | 今日剩余5次</div>
-            </div>
-          </div>
-          <div class="task-status todo" @click="watchVideo">去完成</div>
-        </div>
-      </div>
-    </div>
+        <view class="task-item">
+          <view class="task-left">
+            <view class="task-icon video">视</view>
+            <view class="task-info">
+              <text class="task-name">视频广告</text>
+              <text class="task-reward">奖励50星币 | 今日剩余5次</text>
+            </view>
+          </view>
+          <text class="task-status todo" @tap="watchVideo">去完成</text>
+        </view>
+      </view>
+    </view>
 
     <!-- 用户功能列表 -->
-    <div class="menu-group">
-      <div class="menu-item" v-for="(item, index) in menuList1" :key="index">
-        <div class="icon-placeholder" :style="{color: item.color}">{{ item.iconText }}</div>
-        <span class="menu-text">{{ item.text }}</span>
-        <div class="arrow-placeholder">›</div>
-      </div>
-    </div>
+    <view class="menu-group">
+      <view class="menu-item" 
+        v-for="(item, index) in menuList1" 
+        :key="index" 
+        @tap="handleMenuClick(item)"
+      >
+        <view class="icon-placeholder" :style="{color: item.color}">{{ item.iconText }}</view>
+        <text class="menu-text">{{ item.text }}</text>
+        <view class="arrow-placeholder">›</view>
+      </view>
+    </view>
 
     <!-- 记录相关功能 -->
-    <div class="menu-group">
-      <div class="menu-item" v-for="(item, index) in menuList2" :key="index">
-        <div class="icon-placeholder" :style="{color: item.color}">{{ item.iconText }}</div>
-        <span class="menu-text">{{ item.text }}</span>
-        <div class="arrow-placeholder">›</div>
-      </div>
-    </div>
+    <view class="menu-group">
+      <view class="menu-item" v-for="(item, index) in menuList2" :key="index">
+        <view class="icon-placeholder" :style="{color: item.color}">{{ item.iconText }}</view>
+        <text class="menu-text">{{ item.text }}</text>
+        <view class="arrow-placeholder">›</view>
+      </view>
+    </view>
 
     <!-- 分享和其他功能 -->
-    <div class="menu-group">
-      <div class="menu-item" v-for="(item, index) in menuList3" :key="index">
-        <div class="icon-placeholder" :style="{color: item.color}">{{ item.iconText }}</div>
-        <span class="menu-text">{{ item.text }}</span>
-        <div class="arrow-placeholder">›</div>
-      </div>
-    </div>
+    <view class="menu-group">
+      <view class="menu-item" v-for="(item, index) in menuList3" :key="index">
+        <view class="icon-placeholder" :style="{color: item.color}">{{ item.iconText }}</view>
+        <text class="menu-text">{{ item.text }}</text>
+        <view class="arrow-placeholder">›</view>
+      </view>
+    </view>
     
     <!-- 设置 -->
-    <div class="menu-group">
-      <div class="menu-item">
-        <div class="icon-placeholder" style="color: #4cd4de;">设</div>
-        <span class="menu-text">设置</span>
-        <div class="arrow-placeholder">›</div>
-      </div>
+    <view class="menu-group">
+      <view class="menu-item">
+        <view class="icon-placeholder" style="color: #4cd4de;">设</view>
+        <text class="menu-text">设置</text>
+        <view class="arrow-placeholder">›</view>
+      </view>
       <!-- 添加退出登录按钮 -->
-      <div class="menu-item" v-if="hasToken" @click="handleLogout">
-        <div class="icon-placeholder" style="color: #ff6b6b;">退</div>
-        <span class="menu-text">退出登录</span>
-        <div class="arrow-placeholder">›</div>
-      </div>
-    </div>
-  </div>
+      <view class="menu-item" v-if="hasToken" @tap="handleLogout">
+        <view class="icon-placeholder" style="color: #ff6b6b;">退</view>
+        <text class="menu-text">退出登录</text>
+        <view class="arrow-placeholder">›</view>
+      </view>
+    </view>
+  </view>
 </template>
 
 <script lang="ts" setup>
 import { ref, onMounted } from 'vue';
 import { useMemberStore } from '@/stores/modules/member'
+import { onLoad } from '@dcloudio/uni-app';
+
+// 添加格式化星座的函数
+const formatSign = (sign: string | undefined) => {
+  if (!sign) return '';
+  return sign.replace('座', '');
+}
+
+const userList = ref([])
+const getUserInfo = async () => {
+  try {
+    const result = await uni.request({
+      url: 'http://localhost:3000/users/register',
+      method: 'GET',
+      header: {
+        'content-type': 'application/json'
+      }
+    });
+    
+    if (result.statusCode === 200 && result.data.code === 200) {
+      userList.value = result.data.data;  // 取出 data 数组
+      console.log('用户数据：', userList.value);
+    } else {
+      console.error('请求失败：', result);
+    }
+  } catch (error) {
+    console.error('获取数据异常：', error);
+  }
+}
 
 // 获取store实例
 const memberStore = useMemberStore()
@@ -112,6 +155,11 @@ const hasToken = ref(false)
 onMounted(() => {
   // 使用 getToken 方法获取 token
   hasToken.value = !!memberStore.getToken()
+  getUserInfo()
+})
+
+onLoad(()=>{
+  getUserInfo()
 })
 
 // 显示星币说明
@@ -124,10 +172,9 @@ const showStarInfo = () => {
 
 // 处理充值
 const handleRecharge = () => {
-  uni.showToast({
-    title: '跳转充值页面',
-    icon: 'none'
-  });
+  uni.navigateTo({
+    url: '/pages/recharge/recharge'
+  })
 };
 
 // 观看视频
@@ -144,6 +191,15 @@ const goToLogin = () => {
     url: '/pages/login/login'
   });
 };
+
+// 处理菜单点击
+const handleMenuClick = (item: any) => {
+  if (item.text === '档案管理') {
+    uni.navigateTo({
+      url: '/pages/index/IndexPage/LocalArchives'
+    })
+  }
+}
 
 const menuList1 = ref<MenuItem[]>([
   { iconText: '档', text: '档案管理', color: '#ff6b6b' },
@@ -181,6 +237,18 @@ const handleLogout = () => {
       }
     }
   })
+}
+
+
+const goToProfile = () => {
+  uni.navigateTo({
+    url: '/pages/profile/index'
+  });
+};
+
+const getFirstChar = (sign: string | undefined) => {
+  if (!sign) return '';
+  return sign.charAt(0);  // 只返回第一个字
 }
 </script>
 
@@ -396,5 +464,15 @@ const handleLogout = () => {
 .todo {
   color: #ff6b9d;
 }
+.nickname{
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+.constellation{
+  font-size: 0.8rem;
+  color: #8e8e8e;
+}
 </style>
+
+
 

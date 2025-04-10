@@ -91,6 +91,22 @@
 			"style": {
 				"navigationBarTitleText": "解忧娃娃"
 			}
+		},
+		{
+			"path": "pages/recharge/recharge",
+			"style": {
+				"navigationBarTitleText": "星币充值",
+				"navigationBarBackgroundColor": "#ffffff",
+				"navigationBarTextStyle": "black"
+			}
+		},
+		{
+			"path": "pages/profile/index",
+			"style": {
+				"navigationBarTitleText": "账号资料",
+				"navigationBarBackgroundColor": "#ffffff",
+				"navigationBarTextStyle": "black"
+			}
 		}
 	],
 	"globalStyle": {

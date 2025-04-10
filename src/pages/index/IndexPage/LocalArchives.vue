@@ -29,6 +29,7 @@
     </view>
 
     <!-- 档案列表 -->
+
     <scroll-view class="archives-list" scroll-y >
       <view v-if="userList.length === 0" class="no-data">
         暂无档案数据
@@ -49,18 +50,23 @@
 
     <!-- 底部操作栏 -->
     <view class="bottom-bar">
+
       <text class="archive-count">共 {{ userList.length }} 个档案，其中 0 个未同步</text>
+
       <view class="action-buttons">
         <button class="add-btn"
            @click="navigateToUserAdd"
           >+ 新增</button>
+
         <button class="confirm-btn" @click="confirmSelection">确定选择</button>
+
       </view>
     </view>
   </view>
 </template>
 
 <script setup lang="ts">
+
 
 import { ref, onMounted } from 'vue'
 // 修改导入路径，使用相对路径
@@ -107,6 +113,7 @@ onMounted(() => {
 const goBack = () => {
   uni.navigateBack()
 }
+
 
 const navigateToUserAdd = () => {
   uni.navigateTo({
@@ -203,6 +210,7 @@ const navigateToUserAdd = () => {
   color: #666;
   font-size: 28rpx;
 }
+
 page {
   height: 100%;
   display: flex;
@@ -255,7 +263,10 @@ page {
 }
 
 .edit-btn {
+
   width: 120rpx;
+
+
   background-color: #FFB6C1;
   color: #fff;
   border-radius: 30rpx;
@@ -335,10 +346,12 @@ page {
   border-radius: 8rpx;
   font-size: 28rpx;
 }
+
 .no-data {
   text-align: center;
   padding: 40rpx;
   color: #999;
   font-size: 28rpx;
 }
+
 </style>

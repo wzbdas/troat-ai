@@ -1,5 +1,4 @@
 <template>
-
   <div class="login-container">
     <!-- #ifdef H5 -->
     <div class="h5-login">
@@ -13,7 +12,7 @@
           placeholder="请输入11位手机号"
           v-model="phone"
           maxlength="11"
-       / >
+        >
       </div>
 
       <!-- 验证码输入 -->
@@ -130,6 +129,10 @@ const isCountingDown = ref(false);
 const countDownText = ref('获取验证码');
 
 // H5 端方法
+// 添加验证码存储
+const serverCode = ref(''); // 存储服务器返回的验证码
+
+// 修改获取验证码方法
 const getCode = () => {
   if (!phone.value || phone.value.length !== 11) {
     uni.showToast({
@@ -139,21 +142,61 @@ const getCode = () => {
     return;
   }
   
-  isCountingDown.value = true;
-  countDownText.value = `${countdown.value}s`;
-  
-  const timer = setInterval(() => {
-    countdown.value--;
-    countDownText.value = `${countdown.value}s`;
-    if (countdown.value <= 0) {
-      clearInterval(timer);
-      isCountingDown.value = false;
-      countdown.value = 60;
-      countDownText.value = '获取验证码';
+  // 调用验证码接口
+  uni.request({
+    url: `http://localhost:3000/users/verifyCode?phone=${phone.value}`,  // 修改为查询字符串方式
+    method: 'GET',
+    // 修改获取验证码方法的 success 回调
+    success: (res) => {
+      if (res.statusCode === 200) {
+        // 解析验证码
+        try {
+          const code = JSON.parse(res.data);
+          serverCode.value = code;
+          
+          // 开始倒计时
+          isCountingDown.value = true;
+          countDownText.value = `${countdown.value}s`;
+          
+          const timer = setInterval(() => {
+            countdown.value--;
+            countDownText.value = `${countdown.value}s`;
+            if (countdown.value <= 0) {
+              clearInterval(timer);
+              isCountingDown.value = false;
+              countdown.value = 60;
+              countDownText.value = '获取验证码';
+            }
+          }, 1000);
+    
+          uni.showToast({
+            title: '验证码已发送',
+            icon: 'success'
+          });
+        } catch (error) {
+          uni.showToast({
+            title: '验证码解析失败',
+            icon: 'error'
+          });
+        }
+      } else {
+        uni.showToast({
+          title: res.data?.message || '验证码发送失败',
+          icon: 'error'
+        });
+      }
+    },
+    fail: (err) => {
+      console.error('请求失败：', err);
+      uni.showToast({
+        title: '网络请求失败',
+        icon: 'error'
+      });
     }
-  }, 1000);
+  });
 };
 
+// 修改登录方法
 const handleLogin = () => {
   if (!phone.value || phone.value.length !== 11) {
     uni.showToast({
@@ -170,7 +213,6 @@ const handleLogin = () => {
     });
     return;
   }
-  
   if (!agreeTerms.value) {
     uni.showToast({
       title: '请同意服务协议和隐私政策',
@@ -178,8 +220,27 @@ const handleLogin = () => {
     });
     return;
   }
-  // 这里添加登录逻辑
 
+  // 验证码校验
+  // if (code.value !== serverCode.value) {
+  //   uni.showToast({
+  //     title: '验证码错误',
+  //     icon: 'error'
+  //   });
+  //   return;
+  // }
+
+  // 验证通过，设置token并跳转
+  memberStore.setToken('test-token-123')
+  uni.switchTab({
+    url: '/pages/my/my',
+    success: () => {
+      uni.showToast({
+        title: '登录成功',
+        icon: 'success'
+      })
+    }
+  })
 };
 
 const switchLoginType = () => {
@@ -480,6 +541,9 @@ const goBack = () => {
 </style>
 
 
+<<<<<<< HEAD
 
 
 
+=======
+>>>>>>> dc94fff64ba3fcae6ea7d86b66638072e524764b
