@@ -11,7 +11,7 @@
       <view class="form-item">
         <text class="label">名称</text>
         <view class="value-wrapper">
-          <text class="value">{{ userInfo.name }}</text>
+          <input class="input-value" v-model="userInfo.name" placeholder="请输入名称" />
         </view>
       </view>
 
@@ -42,14 +42,12 @@
       <view class="form-item">
         <text class="label">性别</text>
         <view class="value-wrapper">
-          <text class="value">{{ userInfo.sex }}</text>
-          <text class="arrow">›</text>
+          <input class="input-value" v-model="userInfo.sex" placeholder="请输入性别" />
         </view>
       </view>
     </view>
 
 
-    <!-- 替换选择器组件 -->
     <view class="popup" v-if="showPopup">
       <view class="mask" @tap="cancelPicker"></view>
       <view class="picker-container">
@@ -66,24 +64,25 @@
         </picker-view>
       </view>
     </view>
-    <button class="save-btn">保存</button>
+    <button class="save-btn" @tap="saveUserInfo">保存</button>
   </view>
  
 </template>
 
 <script>
+import { UpdateList } from '@/servers/index';
 export default {
   data() {
     return {
-      showPopup: false,  // 添加这个控制显示状态
+      showPopup: false,
       userInfo: {
-        name: '玛丽',
-        sunsign: '狮子',
-        moonsign: '处女',
-        risesign: '天秤',
-        sex: '女'
+        name: '',
+        sunsign: '',
+        moonsign: '',
+        risesign: '',
+        sex: ''
       },
-      signs: ['双子', '巨蟹', '狮子', '处女', '天秤', '天蝎', '射手'],
+      signs: ['白羊座', '金牛座', '双子座', '巨蟹座', '狮子座', '处女座', '天秤座', '天蝎座', '射手座', '摩羯座', '水瓶座', '双鱼座'],
       currentType: '',
       pickerValue: [0],
       tempValue: ''
@@ -110,6 +109,102 @@ export default {
     onPickerChange(e) {
       const index = e.detail.value[0];
       this.tempValue = this.signs[index];
+    },
+    
+    // 修改保存方法
+    async saveUserInfo() {
+      try {
+        // 获取当前存储的用户信息，保留星币数量
+        const savedInfo = uni.getStorageSync('userInfo');
+        const currentUserInfo = savedInfo ? JSON.parse(savedInfo) : {};
+        
+        const result = await uni.request({
+          url: 'http://localhost:3000/users/update',
+          method: 'POST',
+          header: {
+            'content-type': 'application/json'
+          },
+          data: {
+            name: this.userInfo.name,
+            sunsign: this.userInfo.sunsign,
+            moonsign: this.userInfo.moonsign,
+            risesign: this.userInfo.risesign,
+            sex: this.userInfo.sex,
+            surplus: currentUserInfo.surplus || 0, // 保留原有星币数量
+            isOnline: true
+          }
+        });
+    
+        if (result.statusCode === 200 && result.data.code === 200) {
+          // 更新本地存储时合并原有数据
+          const updatedUserInfo = {
+            ...this.userInfo,
+            surplus: currentUserInfo.surplus || 0 // 保留原有星币数量
+          };
+          uni.setStorageSync('userInfo', JSON.stringify(updatedUserInfo));
+          
+          // 发送更新事件
+          uni.$emit('userInfoUpdated', updatedUserInfo);
+          
+          uni.showToast({
+            title: '保存成功',
+            icon: 'success',
+            duration: 1500,
+            success: () => {
+              setTimeout(() => {
+                uni.switchTab({
+                  url: '/pages/my/my'
+                });
+              }, 1500);
+            }
+          });
+        } else {
+          throw new Error(result.data.msg || '保存失败');
+        }
+      } catch (error) {
+        console.error('保存失败:', error);
+        uni.showToast({
+          title: '保存失败',
+          icon: 'error'
+        });
+      }
+    }
+  },
+  // 修改页面加载方法
+  onShow() {
+    try {
+      const savedInfo = uni.getStorageSync('userInfo');
+      if (savedInfo) {
+        const parsedInfo = JSON.parse(savedInfo);
+        // 确保所有必要字段都存在
+        this.userInfo = {
+          name: parsedInfo.name || '',
+          sunsign: parsedInfo.sunsign || '',
+          moonsign: parsedInfo.moonsign || '',
+          risesign: parsedInfo.risesign || '',
+          sex: parsedInfo.sex || ''
+        };
+      } else {
+        // 如果没有存储的用户信息，尝试从登录信息获取
+        const phone = uni.getStorageSync('userPhone');
+        if (phone) {
+          uni.request({
+            url: 'http://localhost:3000/users/login',
+            method: 'POST',
+            data: {
+              phone: phone
+            },
+            success: (res) => {
+              if (res.statusCode === 200 && res.data.code === 200) {
+                this.userInfo = res.data.data;
+                uni.setStorageSync('userInfo', JSON.stringify(res.data.data));
+              }
+            }
+          });
+        }
+      }
+    } catch (error) {
+      console.error('获取用户信息失败:', error);
     }
   }
 }
@@ -218,4 +313,27 @@ export default {
   line-height: 70rpx;
   text-align: center;
 }
+.input-value {
+  color: #666;
+  font-size: 28rpx;
+  text-align: right;
+  padding: 0;
+  margin-right: 10rpx;
+  min-width: 120rpx;
+}
+
+/* 添加任务状态样式 */
+.task-status {
+  font-size: 0.8rem;
+}
+
+.completed {
+  color: #999;
+}
+
+.todo {
+  color: #ff6b9d;
+  margin-left: 100px; /* 添加左边距以对齐 */
+}
+
 </style>

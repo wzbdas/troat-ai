@@ -1,4 +1,3 @@
-
 <template>
   <view class="my">
     <!-- 头部登录/注册区域 -->
@@ -22,7 +21,7 @@
     <view class="star-card" v-if="hasToken">
       <view class="star-header">
         <view class="star-amount">
-          <text class="amount">600</text>
+          <text class="amount">{{ userList[0]?.surplus || 0 }}</text>
           <text class="label">我的星币</text>
           <text class="info-icon" @tap="showStarInfo">?</text>
         </view>
@@ -38,7 +37,20 @@
               <text class="task-reward">奖励50星币</text>
             </view>
           </view>
-          <text class="task-status completed">已完成</text>
+          <text 
+            class="task-status" 
+            :class="isSignedIn ? 'completed' : 'todo'"
+            @tap="handleSignIn"
+            v-if="!isSignedIn"
+          >
+            去完成
+          </text>
+          <text 
+            class="task-status completed" 
+            v-else
+          >
+            已完成
+          </text>
         </view>
 
         <view class="task-item">
@@ -46,21 +58,39 @@
             <view class="task-icon share">分</view>
             <view class="task-info">
               <text class="task-name">分享</text>
-              <text class="task-reward">奖励50星币 | 今日剩余0次</text>
+              <text class="task-reward">奖励50星币</text>
             </view>
           </view>
-          <text class="task-status completed">已完成</text>
+          <text class="task-status" :class="isShared ? 'completed' : 'todo'" @tap="handleShare">
+            {{ isShared ? '已完成' : '去完成' }}
+          </text>
         </view>
 
         <view class="task-item">
-          <view class="task-left">
-            <view class="task-icon video">视</view>
-            <view class="task-info">
-              <text class="task-name">视频广告</text>
-              <text class="task-reward">奖励50星币 | 今日剩余5次</text>
+        
+          <view class="task-item">
+            <view class="task-left">
+              <view class="task-icon video">视</view>
+              <view class="task-info">
+                <text class="task-name">视频广告</text>
+                <text class="task-reward">奖励50星币 | 今日剩余{{ videoRemaining }}次</text>
+              </view>
             </view>
+            <text 
+              class="tasks" 
+              :class="videoRemaining <= 0 ? 'completed' : 'todo'" 
+              @tap="watchVideo"
+              v-if="videoRemaining > 0"
+            >
+              去完成
+            </text>
+            <text 
+              class="task-status completed" 
+              v-else
+            >
+              已完成
+            </text>
           </view>
-          <text class="task-status todo" @tap="watchVideo">去完成</text>
         </view>
       </view>
     </view>
@@ -79,17 +109,21 @@
     </view>
 
     <!-- 记录相关功能 -->
-    <view class="menu-group">
+    <!-- <view class="menu-group">
       <view class="menu-item" v-for="(item, index) in menuList2" :key="index">
         <view class="icon-placeholder" :style="{color: item.color}">{{ item.iconText }}</view>
         <text class="menu-text">{{ item.text }}</text>
         <view class="arrow-placeholder">›</view>
       </view>
-    </view>
+    </view> -->
 
     <!-- 分享和其他功能 -->
     <view class="menu-group">
-      <view class="menu-item" v-for="(item, index) in menuList3" :key="index">
+      <view class="menu-item" 
+        v-for="(item, index) in menuList3" 
+        :key="index"
+        @tap="handleMenuClick(item)"
+      >
         <view class="icon-placeholder" :style="{color: item.color}">{{ item.iconText }}</view>
         <text class="menu-text">{{ item.text }}</text>
         <view class="arrow-placeholder">›</view>
@@ -98,7 +132,7 @@
     
     <!-- 设置 -->
     <view class="menu-group">
-      <view class="menu-item">
+      <view class="menu-item" @tap="goToSetting">
         <view class="icon-placeholder" style="color: #4cd4de;">设</view>
         <text class="menu-text">设置</text>
         <view class="arrow-placeholder">›</view>
@@ -116,7 +150,30 @@
 <script lang="ts" setup>
 import { ref, onMounted } from 'vue';
 import { useMemberStore } from '@/stores/modules/member'
-import { onLoad } from '@dcloudio/uni-app';
+import { onLoad, onShareAppMessage } from '@dcloudio/uni-app';
+import { UpdateList } from '@/servers/index';
+// 添加分享相关的状态和方法
+const isShared = ref(false);
+  // 在 script setup 中添加
+  const videoRemaining = ref(5); // 视频观看剩余次数
+          
+          // 在 onMounted 中添加事件监听
+          // onMounted(() => {
+          //   hasToken.value = !!memberStore.getToken()
+          //   getUserInfo()
+            
+          //   // 添加视频奖励事件监听
+          //   uni.$on('videoReward', () => {
+          //     if (userList.value[0]) {
+          //       const updatedUser = { ...userList.value[0] };
+          //       updatedUser.surplus = (updatedUser.surplus || 0) + 50;
+          //       userList.value = [updatedUser];
+          //       videoRemaining.value--;
+          //     }
+          //   });
+          // });
+          
+          // 修改视频广告任务的模板部分
 
 // 添加格式化星座的函数
 const formatSign = (sign: string | undefined) => {
@@ -127,19 +184,45 @@ const formatSign = (sign: string | undefined) => {
 const userList = ref([])
 const getUserInfo = async () => {
   try {
+    // 获取存储的用户信息
+    const userInfo = uni.getStorageSync('userInfo');
+    if (userInfo) {
+      userList.value = [JSON.parse(userInfo)];
+      return;
+    }
+
+    // 如果没有存储的用户信息，则通过手机号获取
+    const phone = uni.getStorageSync('userPhone');
+    if (!phone) {
+      // console.error('未找到登录信息');
+      return;
+    }
+
     const result = await uni.request({
-      url: 'http://localhost:3000/users/register',
-      method: 'GET',
+      url: 'http://localhost:3000/users/login',
+      method: 'POST',
       header: {
         'content-type': 'application/json'
+      },
+      data: {
+        phone: phone
       }
     });
     
     if (result.statusCode === 200 && result.data.code === 200) {
-      userList.value = result.data.data;  // 取出 data 数组
-      console.log('用户数据：', userList.value);
+      userList.value = [result.data.data];
+      // 更新存储的用户信息
+      uni.setStorageSync('userInfo', JSON.stringify(result.data.data));
     } else {
-      console.error('请求失败：', result);
+      console.error('获取用户信息失败：', result);
+      // 登录失效，清除信息并跳转登录页
+      memberStore.setToken('');
+      hasToken.value = false;
+      uni.removeStorageSync('userInfo');
+      uni.removeStorageSync('userPhone');
+      uni.navigateTo({
+        url: '/pages/login/login'
+      });
     }
   } catch (error) {
     console.error('获取数据异常：', error);
@@ -179,9 +262,8 @@ const handleRecharge = () => {
 
 // 观看视频
 const watchVideo = () => {
-  uni.showToast({
-    title: '播放广告视频',
-    icon: 'none'
+  uni.navigateTo({
+    url: '../my/component/video'
   });
 };
 
@@ -192,31 +274,48 @@ const goToLogin = () => {
   });
 };
 
+// 添加跳转到设置页面的方法
+const goToSetting = () => {
+  uni.navigateTo({
+    url: '/pages/my/component/setting'
+  });
+};
+
 // 处理菜单点击
 const handleMenuClick = (item: any) => {
   if (item.text === '档案管理') {
     uni.navigateTo({
       url: '/pages/index/IndexPage/LocalArchives'
     })
+  } else if (item.text === '问题反馈') {
+    uni.navigateTo({
+      url: '/pages/my/component/question'
+    })
+  }  else if (item.text === '我的卡券') {
+    uni.navigateTo({
+      url: '/pages/my/component/coupon'
+    })
+  } else if (item.text === '我的订单') {
+    uni.navigateTo({
+      url: '/pages/my/component/order'
+    })
+  } else if (item.text === '关于我们') {
+    uni.navigateTo({
+      url: '/pages/my/component/about'
+    })
   }
 }
 
 const menuList1 = ref<MenuItem[]>([
   { iconText: '档', text: '档案管理', color: '#ff6b6b' },
-  { iconText: '报', text: '已购报告', color: '#4cd964' },
   { iconText: '券', text: '我的卡券', color: '#ffcc00' },
   { iconText: '单', text: '我的订单', color: '#ff9f9f' },
   { iconText: '活', text: '我的活动', color: '#ff9f7f' },
 ]);
 
-const menuList2 = ref<MenuItem[]>([
-  { iconText: '问', text: '问题记录', color: '#ff7d9e' },
-  { iconText: 'AI', text: 'AI解读记录', color: '#5e9cff' },
-]);
 
 const menuList3 = ref<MenuItem[]>([
-  { iconText: '分', text: '分享', color: '#d14af5' },
-  { iconText: '邀', text: '邀请好友填写档案', color: '#ff9f7f' },
+  { iconText: 'AI', text: 'AI解读记录', color: '#5e9cff' },
   { iconText: '反', text: '问题反馈', color: '#ff9f7f' },
   { iconText: '关', text: '关于我们', color: '#5e9cff' },
 ]);
@@ -228,15 +327,20 @@ const handleLogout = () => {
     content: '确定要退出登录吗？',
     success: (res) => {
       if (res.confirm) {
-        memberStore.setToken('')  // 清除token
-        hasToken.value = false
+        memberStore.setToken('');  // 清除token
+        hasToken.value = false;
+        // 清除所有存储的用户信息
+        uni.removeStorageSync('userInfo');
+        uni.removeStorageSync('userPhone');
+        userList.value = [];
+        
         uni.showToast({
           title: '已退出登录',
           icon: 'success'
-        })
+        });
       }
     }
-  })
+  });
 }
 
 
@@ -250,6 +354,186 @@ const getFirstChar = (sign: string | undefined) => {
   if (!sign) return '';
   return sign.charAt(0);  // 只返回第一个字
 }
+
+// 添加签到状态
+const isSignedIn = ref(false)
+
+// 修改处理签到方法
+const handleSignIn = async () => {
+  try {
+    if (userList.value[0]) {
+      const updatedUser = { ...userList.value[0] };
+      const newSurplus = (updatedUser.surplus || 0) + 50;
+      
+      // 调用更新接口
+      const result = await uni.request({
+        url: 'http://localhost:3000/users/update',
+        method: 'POST',
+        header: {
+          'content-type': 'application/json'
+        },
+        data: {
+          name: updatedUser.name,
+          sunsign: updatedUser.sunsign,
+          moonsign: updatedUser.moonsign,
+          risesign: updatedUser.risesign,
+          sex: updatedUser.sex,
+          isOnline: true,
+          surplus: newSurplus  // 发送新的星币数量
+        }
+      });
+
+      if (result.statusCode === 200 && result.data.code === 200) {
+        // 更新本地数据
+        updatedUser.surplus = newSurplus;
+        userList.value = [updatedUser];
+        isSignedIn.value = true;
+        
+        // 更新本地存储
+        uni.setStorageSync('userInfo', JSON.stringify(updatedUser));
+        
+        uni.showToast({
+          title: '签到成功 +50星币',
+          icon: 'success'
+        });
+      } else {
+        throw new Error(result.data.msg || '签到失败');
+      }
+    }
+  } catch (error) {
+    console.error('签到失败：', error);
+    uni.showToast({
+      title: error.message || '签到失败',
+      icon: 'error'
+    });
+  }
+}
+
+
+// 修改分享处理方法
+const handleShare = async () => {
+  if (!isShared.value && userList.value[0]) {
+    try {
+      const updatedUser = { ...userList.value[0] };
+      const newSurplus = (updatedUser.surplus || 0) + 50;
+      
+      const result = await uni.request({
+        url: 'http://localhost:3000/users/update',
+        method: 'POST',
+        header: {
+          'content-type': 'application/json'
+        },
+        data: {
+          name: updatedUser.name,
+          sunsign: updatedUser.sunsign,
+          moonsign: updatedUser.moonsign,
+          risesign: updatedUser.risesign,
+          sex: updatedUser.sex,
+          surplus: newSurplus,
+          isOnline: true
+        }
+      });
+
+      if (result.statusCode === 200 && result.data.code === 200) {
+        updatedUser.surplus = newSurplus;
+        userList.value = [updatedUser];
+        isShared.value = true;
+        uni.setStorageSync('userInfo', JSON.stringify(updatedUser));
+        
+        uni.showToast({
+          title: '分享成功 +50星币',
+          icon: 'success'
+        });
+      }
+    } catch (error) {
+      console.error('分享失败：', error);
+      uni.showToast({
+        title: '分享失败',
+        icon: 'error'
+      });
+    }
+  }
+};
+
+// 修改分享处理方法
+onShareAppMessage(() => {
+  // 分享成功后自动触发奖励
+  handleShare();
+  
+  return {
+    title: '塔塔图灵',
+    path: '/pages/index/index',
+    imageUrl: '/static/share.png'
+  }
+})
+
+// 修改视频广告事件监听
+onMounted(() => {
+  hasToken.value = !!memberStore.getToken();
+  getUserInfo();
+  
+  // 添加用户信息更新事件监听
+  uni.$on('userInfoUpdated', () => {
+    getUserInfo(); // 重新获取用户信息
+  });
+  
+  // 添加视频奖励事件监听
+  uni.$on('videoReward', async () => {
+    try {
+      if (userList.value[0]) {
+        const updatedUser = { ...userList.value[0] };
+        const newSurplus = (updatedUser.surplus || 0) + 50;
+        
+        const result = await uni.request({
+          url: 'http://localhost:3000/users/update',
+          method: 'POST',
+          header: {
+            'content-type': 'application/json'
+          },
+          data: {
+            name: updatedUser.name,
+            sunsign: updatedUser.sunsign,
+            moonsign: updatedUser.moonsign,
+            risesign: updatedUser.risesign,
+            sex: updatedUser.sex,
+            surplus:updatedUser.surplus,
+            isOnline: true
+          }
+        });
+
+        if (result.statusCode === 200 && result.data.code === 200) {
+          // 更新本地数据
+          updatedUser.surplus = newSurplus;
+          userList.value = [updatedUser];
+          videoRemaining.value--;
+          
+          uni.showToast({
+            title: '观看成功 +50星币',
+            icon: 'success'
+          });
+        } else {
+          throw new Error(result.data.msg || '更新失败');
+        }
+      }
+    } catch (error) {
+      console.error('更新失败：', error);
+      uni.showToast({
+        title: error.message || '更新失败',
+        icon: 'error'
+      });
+    }
+  });
+});
+
+
+// 定义分享内容
+onShareAppMessage(() => {
+  return {
+    title: '塔塔图灵',
+    path: '/pages/index/index',
+    imageUrl: '/static/share.png'
+  }
+})
 </script>
 
 <style scoped>
@@ -456,7 +740,10 @@ const getFirstChar = (sign: string | undefined) => {
 .task-status {
   font-size: 0.8rem;
 }
-
+.tasks{
+  font-size: 0.8rem;
+  margin-left: 100px;
+}
 .completed {
   color: #999;
 }

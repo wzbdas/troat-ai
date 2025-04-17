@@ -4,7 +4,31 @@
     <div class="h5-login">
       <div class="title">欢迎来到塔塔图灵</div>
       
-      <!-- 手机号输入 -->
+      <!-- 账号密码登录 -->
+      <template v-if="!isPhoneLogin">
+        <div class="input-group">
+          <input 
+            type="text" 
+            class="account-input" 
+            placeholder="请输入账号"
+            v-model="account"
+            maxlength="20"
+          >
+        </div>
+        <div class="input-group">
+          <input 
+            type="password" 
+            class="password-input" 
+            placeholder="请输入密码"
+            v-model="password"
+            maxlength="20"
+          >
+        </div>
+      </template>
+
+      <!-- 手机验证码登录 -->
+      <template v-else>
+         <!-- 手机号输入 -->
       <div class="input-group">
         <input 
           type="number" 
@@ -31,10 +55,11 @@
           {{ countDownText }}
         </button>
       </div>
+      </template>
 
       <!-- 登录方式切换 -->
       <div class="login-type">
-        <div class="type-text">手机登录（仅中国大陆）</div>
+        <div class="type-text">{{ isPhoneLogin ? '手机登录（仅中国大陆）' : '账号密码登录' }}</div>
         <div class="switch-btn" @click="switchLoginType">切换</div>
       </div>
 
@@ -48,6 +73,11 @@
           不同登录方式账号不同
           <text class="help-icon">?</text>
         </div>
+      </div>
+
+      <!-- 注册链接 -->
+      <div class="register-link" @click="goToRegister">
+        没有账号？<text class="link">去注册</text>
       </div>
 
       <!-- 登录按钮 -->
@@ -68,7 +98,7 @@
       </div>
 
       <!-- 返回首页 -->
-      <div class="back-home" @click="goBack">返回首页</div>
+      <!-- <div class="back-home" @click="goBack">返回首页</div> -->
     </div>
     <!-- #endif -->
 
@@ -196,23 +226,48 @@ const getCode = () => {
   });
 };
 
+// 添加手机号验证函数
+const validatePhoneNumber = (phone: string) => {
+  const phoneRegex = /^1[3-9]\d{9}$/;
+  return phoneRegex.test(phone);
+};
+
 // 修改登录方法
-const handleLogin = () => {
-  if (!phone.value || phone.value.length !== 11) {
-    uni.showToast({
-      title: '请输入正确的手机号',
-      icon: 'none'
-    });
-    return;
+const handleLogin = async () => {
+  if (isPhoneLogin.value) {
+    // 手机验证码登录验证
+    if (!phone.value || !validatePhoneNumber(phone.value)) {
+      uni.showToast({
+        title: '请输入正确的手机号',
+        icon: 'none'
+      });
+      return;
+    }
+    if (!code.value) {
+      uni.showToast({
+        title: '请输入验证码',
+        icon: 'none'
+      });
+      return;
+    }
+  } else {
+    // 账号密码登录验证
+    if (!account.value) {
+      uni.showToast({
+        title: '请输入账号',
+        icon: 'none'
+      });
+      return;
+    }
+    if (!password.value) {
+      uni.showToast({
+        title: '请输入密码',
+        icon: 'none'
+      });
+      return;
+    }
   }
-  
-  if (!code.value) {
-    uni.showToast({
-      title: '请输入验证码',
-      icon: 'none'
-    });
-    return;
-  }
+
   if (!agreeTerms.value) {
     uni.showToast({
       title: '请同意服务协议和隐私政策',
@@ -221,33 +276,90 @@ const handleLogin = () => {
     return;
   }
 
-  // 验证码校验
-  // if (code.value !== serverCode.value) {
-  //   uni.showToast({
-  //     title: '验证码错误',
-  //     icon: 'error'
-  //   });
-  //   return;
-  // }
+  // 显示加载提示
+  uni.showLoading({
+    title: '登录中...'
+  });
 
-  // 验证通过，设置token并跳转
-  memberStore.setToken('test-token-123')
-  uni.switchTab({
-    url: '/pages/my/my',
-    success: () => {
+  try {
+    const { data } = await uni.request({
+      url: 'http://localhost:3000/users/login',
+      method: 'POST',
+      header: {
+        'Content-Type': 'application/json'
+      },
+      data: isPhoneLogin.value ? {
+        // 验证码登录参数
+        phone: phone.value,
+        yzCode: code.value,
+        isCode: 0
+      } : {
+        // 密码登录参数
+        phone: account.value,
+        password: password.value,
+        isCode: 1
+      }
+    });
+
+    uni.hideLoading();
+
+    if (data.code === 200) {
+      // 登录成功处理
+      memberStore.setToken('test-token-123');
+      uni.setStorageSync('userInfo', JSON.stringify(data.data));
+      // 根据登录方式存储不同的手机号
+      uni.setStorageSync('userPhone', isPhoneLogin.value ? phone.value : account.value);
+      
       uni.showToast({
         title: '登录成功',
         icon: 'success'
-      })
+      });
+      
+      setTimeout(() => {
+        uni.reLaunch({
+          url: '/pages/my/my'
+        });
+      }, 1500);
+    } else {
+      uni.showToast({
+        title: data.msg || '登录失败',
+        icon: 'none'
+      });
     }
-  })
+  } catch (error) {
+    console.error('登录失败:', error);
+    uni.hideLoading();
+    uni.showToast({
+      title: '网络请求失败',
+      icon: 'none'
+    });
+  }
 };
 
+// 添加账号密码登录相关变量
+const isPhoneLogin = ref(true); // 默认为手机登录
+const account = ref('');
+const password = ref('');
+const isCode=ref(0)
+
+// 修改切换登录方式的方法
 const switchLoginType = () => {
-  uni.showToast({
-    title: '切换登录方式',
-    icon: 'none'
-  });
+  isPhoneLogin.value = !isPhoneLogin.value;
+  if(isCode.value==0){
+    isCode.value=1
+  }else if(isCode.value==1){
+      isCode.value=0
+  }
+  console.log(isCode.value);
+  
+  // 清空输入
+  if (isPhoneLogin.value) {
+    account.value = '';
+    password.value = '';
+  } else {
+    phone.value = '';
+    code.value = '';
+  }
 };
 
 const showLoginHelp = () => {
@@ -283,25 +395,64 @@ const phoneLogin = () => {
   })
 }
 
-const simLogin = () => {
-  // 设置token到pinia
-  memberStore.setToken('test-token-123')
-  
-  // 使用reLaunch跳转到我的页面
-  uni.reLaunch({
-    url: '/pages/my/my',
-    success: () => {
+const simLogin = async () => {
+  try {
+    // 使用固定的手机号模拟登录
+    const { data } = await uni.request({
+      url: 'http://localhost:3000/users/login',
+      method: 'POST',
+      header: {
+        'Content-Type': 'application/json'
+      },
+      data: {
+        phone: '15831006073',
+        password: 'cuiai123' 
+      }
+    });
+
+    if (data.code === 200) {
+      // 设置token到pinia
+      memberStore.setToken('test-token-123');
+      // 存储用户信息
+      uni.setStorageSync('userInfo', JSON.stringify(data.data));
+      // 存储登录手机号
+      uni.setStorageSync('userPhone', '15831006073');
+      
+      // 使用reLaunch跳转到我的页面
+      uni.reLaunch({
+        url: '/pages/my/my',
+        success: () => {
+          uni.showToast({
+            title: '登录成功',
+            icon: 'success'
+          });
+        }
+      });
+    } else {
       uni.showToast({
-        title: '登录成功',
-        icon: 'success'
-      })
+        title: data.msg || '登录失败',
+        icon: 'none'
+      });
     }
-  })
+  } catch (error) {
+    console.error('登录失败:', error);
+    uni.showToast({
+      title: '网络请求失败',
+      icon: 'none'
+    });
+  }
 }
 
 const goBack = () => {
   uni.navigateBack();
 }
+
+// 添加跳转到注册页面的方法
+const goToRegister = () => {
+  uni.navigateTo({
+    url: '/pages/my/component/register'
+  });
+};
 </script>
 
 <style scoped>
@@ -538,15 +689,22 @@ const goBack = () => {
 .link {
   color: #FF69B4;
 }
+.register-link {
+  text-align: center;
+  font-size: 0.9rem;
+  color: #666;
+  margin-bottom: 2vh;
+  padding: 10px;
+  cursor: pointer;
+}
+
+.register-link .link {
+  color: #FF69B4;
+  font-weight: 500;
+}
+
 </style>
 
 
-<<<<<<< HEAD
-<<<<<<< HEAD
 
 
-
-=======
->>>>>>> dc94fff64ba3fcae6ea7d86b66638072e524764b
-=======
->>>>>>> 4606b550cd07849174c40dd31f0efafec1453d0c

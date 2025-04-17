@@ -31,15 +31,14 @@
 			"style": {
 				"navigationBarTitleText": "算一算"
 			}
-
-		},{
+		},
+		{
 			"path": "pages/tarot-result/tarot-result",
 			"style": {
-			  "navigationBarTitleText": "塔罗解答"
+				"navigationBarTitleText": "塔罗解答"
 			}
-		  },
+		},
 		{
-
 			"path": "pages/star/star",
 			"style": {
 				"navigationBarTitleText": "星盘"
@@ -114,7 +113,115 @@
 				"navigationBarBackgroundColor": "#ffffff",
 				"navigationBarTextStyle": "black"
 			}
-		}
+		},
+		{
+			"path": "pages/my/component/question",
+			"style": {
+				"navigationBarTitleText": "问题反馈",
+				"navigationBarBackgroundColor": "#ffffff",
+				"navigationBarTextStyle": "black"
+			}
+		},
+		{
+			"path": "pages/my/component/video",
+			"style": {
+				"navigationStyle": "custom",
+				"navigationBarTextStyle": "white",
+				"app-plus": {
+					"titleNView": false,
+					"bounce": "none"
+				}
+			}
+		},
+		{
+			"path": "pages/my/component/coupon",
+			"style": {
+				"navigationBarTitleText": "我的卡券",
+				"navigationBarBackgroundColor": "#ffffff",
+				"navigationBarTextStyle": "black"
+			}
+		},
+		{
+			"path": "pages/my/component/order",
+			"style": {
+				"navigationBarTitleText": "订单列表",
+				"navigationBarBackgroundColor": "#ffffff",
+				"navigationBarTextStyle": "black"
+			}
+		},
+		{
+			"path": "pages/my/component/about",
+			"style": {
+			  "navigationBarTitleText": "关于",
+			  "navigationBarBackgroundColor": "#ffffff",
+				"navigationBarTextStyle": "black"
+			}
+		  },
+		  {
+			"path": "pages/my/component/setting",
+			"style": {
+			  "navigationBarTitleText": "设置",
+			   "navigationBarBackgroundColor": "#ffffff",
+				"navigationBarTextStyle": "black"
+			}
+		  },
+		  {
+			"path": "pages/my/component/password",
+			"style": {
+			  "navigationBarTitleText": "设置密码",
+			   "navigationBarBackgroundColor": "#ffffff",
+				"navigationBarTextStyle": "black"
+			}
+		  },
+		  {
+			"path": "pages/my/component/register",
+			"style": {
+			  "navigationBarTitleText": "注册",
+			  "navigationBarBackgroundColor": "#ffffff",
+			  "navigationBarTextStyle": "black"
+			}
+		  },
+		{
+			"path": "pages/my/component/user",
+			"style": {
+			  "navigationBarTitleText": "用户服务协议",
+			  "navigationBarBackgroundColor": "#ffffff",
+			  "navigationBarTextStyle": "black"
+			}
+		  },
+		  {
+			"path": "pages/my/component/Policy",
+			"style": {
+			  "navigationBarTitleText": "隐私政策",
+			  "navigationBarBackgroundColor": "#ffffff",
+			  "navigationBarTextStyle": "black"
+			}
+		  },
+		  {
+			"path": "pages/my/component/instruction",
+			"style": {
+			  "navigationBarTitleText": "说明",
+			  "navigationBarBackgroundColor": "#ffffff",
+			  "navigationBarTextStyle": "black"
+			}
+		  },
+		  {
+			"path": "pages/my/component/plan",
+			"style": {
+			  "navigationBarTitleText": "说明",
+			  "navigationBarBackgroundColor": "#ffffff",
+			  "navigationBarTextStyle": "black"
+			}
+		  },
+		  {
+			"path": "pages/my/component/phone",
+			"style": {
+			  "navigationBarTitleText": "绑定手机",
+			  "navigationBarBackgroundColor": "#ffffff",
+			  "navigationBarTextStyle": "black"
+			}
+		  }
+
 	],
 	"globalStyle": {
 		"navigationBarTextStyle": "black",
@@ -151,3 +258,4 @@
 		]
 	}
 }
+
