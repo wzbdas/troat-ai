@@ -13,10 +13,10 @@
 
     <!-- 用户信息卡片 -->
     <view class="user-card">
-      <image class="avatar" src="../../../static/index/profile.jpg"></image>
+      <image class="avatar" src="../../../static/index/imagetarot.png"></image>
       <view class="user-info">
-        <text class="username">张三</text>
-        <text class="birth-info">1995年8月8日 12:30</text>
+        <text class="username">{{ userName }}</text>
+        <text class="birth-info">{{ userBirthday }}</text>
       </view>
     </view>
 
@@ -42,15 +42,15 @@
       <view class="lucky-items">
         <view class="lucky-item">
           <text class="item-label">幸运色</text>
-          <text class="item-value">粉色</text>
+          <text class="item-value">{{ luckyInfo.color }}</text>
         </view>
         <view class="lucky-item">
           <text class="item-label">幸运数字</text>
-          <text class="item-value">6</text>
+          <text class="item-value">{{ luckyInfo.number }}</text>
         </view>
         <view class="lucky-item">
           <text class="item-label">吉利方位</text>
-          <text class="item-value">东南</text>
+          <text class="item-value">{{ luckyInfo.direction }}</text>
         </view>
       </view>
     </view>
@@ -58,28 +58,101 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 
 // 返回上一页
 const goBack = () => {
   uni.navigateBack()
 }
 
+// 用户信息
+const userName = ref('自己...')
+const userBirthday = ref('2000-03-01')
+const userArea = ref('北京朝阳区')
+
+// 从本地存储读取用户信息
+onMounted(() => {
+  const storedUser = uni.getStorageSync('userInfo')
+  if (storedUser) {
+    userName.value = storedUser.name
+    userBirthday.value = storedUser.birthday
+    userArea.value = storedUser.area
+    updateFortuneData()
+    generateLuckyInfo()
+  }
+
+  // 添加事件监听
+  uni.$on('updateUserInfo', (user) => {
+    userBirthday.value = user.birthday
+    userArea.value = user.area
+    updateFortuneData()
+    generateLuckyInfo()
+  })
+})
+
+// 在组件卸载时移除事件监听
+onUnmounted(() => {
+  uni.$off('updateUserInfo')
+})
+
+// 幸运物信息数据
+const luckyColors = ['红色', '橙色', '黄色', '绿色', '蓝色', '紫色', '粉色', '白色', '金色']
+const luckyDirections = ['东', '南', '西', '北', '东南', '东北', '西南', '西北']
+const luckyInfo = ref({
+  color: '粉色',
+  number: 6,
+  direction: '东南'
+})
+
+// 生成随机幸运信息
+const generateLuckyInfo = () => {
+  // 使用用户生日作为随机种子，确保同一用户在同一天获得相同的幸运信息
+  const date = new Date(userBirthday.value)
+  const seed = date.getFullYear() * 10000 + (date.getMonth() + 1) * 100 + date.getDate()
+  
+  // 使用种子生成随机数
+  const random = (min: number, max: number) => {
+    const x = Math.sin(seed) * 10000
+    return Math.floor((x - Math.floor(x)) * (max - min + 1)) + min
+  }
+
+  luckyInfo.value = {
+    color: luckyColors[random(0, luckyColors.length - 1)],
+    number: random(1, 9),
+    direction: luckyDirections[random(0, luckyDirections.length - 1)]
+  }
+}
+
 // 日期选择
 const currentDate = ref(new Date().toISOString().split('T')[0])
 const onDateChange = (e: any) => {
   currentDate.value = e.detail.value
+  generateLuckyInfo() // 日期改变时更新幸运信息
 }
+
+import { generateFortuneData } from '@/utils/fortuneGenerator'
 
 // 运势指数数据
 const fortuneItems = ref([
   { label: '综合运势', value: 88, color: '#FFB6C1' },
-  { label: '事业运势', value: 92, color: '#87CEEB' },
-  { label: '感情运势', value: 75, color: '#98FB98' },
-  { label: '财运指数', value: 85, color: '#DDA0DD' },
-  { label: '健康指数', value: 95, color: '#F0E68C' },
-  { label: '学习指数', value: 82, color: '#FFA07A' }
+  { label: '事业运势', value: 0, color: '#87CEEB' },
+  { label: '感情运势', value: 0, color: '#98FB98' },
+  { label: '财运指数', value: 0, color: '#DDA0DD' },
+  { label: '健康指数', value: 0, color: '#F0E68C' }
 ])
+
+// 更新运势数据
+const updateFortuneData = () => {
+  if (userBirthday.value && userArea.value) {
+    const fortune = generateFortuneData(userBirthday.value, userArea.value)
+    fortuneItems.value[1].value = fortune.career
+    fortuneItems.value[2].value = fortune.love
+    fortuneItems.value[3].value = fortune.wealth
+    fortuneItems.value[4].value = fortune.health
+    // 综合运势取平均值
+    fortuneItems.value[0].value = Math.round((fortune.career + fortune.love + fortune.wealth + fortune.health) / 4)
+  }
+}
 </script>
 
 <style scoped>

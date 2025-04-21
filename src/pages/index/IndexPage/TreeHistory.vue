@@ -6,9 +6,11 @@
     
     <view class="history-list">
       <view class="history-item" v-for="(item, index) in historyList" :key="index">
-        <view class="time">{{ item.time }}</view>
         <view class="content">{{ item.content }}</view>
-        <image class="flower-decoration" src="/static/index/flower.png" mode="aspectFit"></image>
+        <view class="time">{{ formatTime(item.time) }}</view>
+        <view class="delete-btn-container">
+          <button class="delete-btn" @click="handleDelete(item.id)">删除</button>
+        </view>
       </view>
     </view>
     
@@ -17,19 +19,86 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
+import { getQingsuList,deleteQingsu } from '../../../servers/index';
 
-// 模拟历史记录数据
-const historyList = ref([
-  {
-    time: '2025-04-07 15:56:19',
-    content: '111'
-  },
-  {
-    time: '2025-04-07 11:46:17',
-    content: '哈哈哈哈'
+// 定义类型
+interface QingsuItem {
+  time: string;
+  content: string;
+}
+
+interface QingsuResponse {
+  data: {
+    data: QingsuItem[];
+  };
+}
+
+// 定义历史记录列表
+const historyList = ref<Array<{id: number, time: string; content: string }>>([]);
+
+// 格式化时间函数
+const formatTime = (time: string) => {
+  if (!time) return '';
+  const date = new Date(time);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  const seconds = String(date.getSeconds()).padStart(2, '0');
+  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+};
+
+// 获取倾诉列表
+const fetchQingsuList = async () => {
+  try {
+    const res = await getQingsuList() as QingsuResponse;
+    if (res && res.data) {
+      historyList.value = res.data.data.map(item => ({
+        id: item.id,
+        time: item.time,
+        content: item.content
+      }));
+    }
+  } catch (error) {
+    uni.showToast({
+      title: '获取倾诉列表失败',
+      icon: 'none'
+    });
   }
-]);
+};
+
+// 页面加载时获取数据
+onMounted(() => {
+  fetchQingsuList();
+});
+// 删除sorpt
+const handleDelete = (qingsuid: number) => {
+  uni.showModal({
+    title: '确认删除',
+    content: '确认要删除这一条sorpt吗？',
+    success: (res) => {
+      if (res.confirm) {
+
+        deleteQingsu({id: qingsuid}).then(res => {
+          if (res.data.code === 200) {
+            uni.showToast({
+              title: '删除成功',
+              icon: 'none'
+            })
+            fetchQingsuList()
+          } else {
+            uni.showToast({
+              title: '删除失败',
+              icon: 'none'
+            })
+          }
+        })
+      }
+    } 
+  })
+}
 </script>
 
 <style scoped>
@@ -77,6 +146,30 @@ const historyList = ref([
   font-size: 28rpx;
   color: #ffffff;
   line-height: 1.6;
+}
+
+.delete-btn-container {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 15rpx;
+}
+
+.delete-btn {
+  background-color: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  font-size: 24rpx;
+  padding: 6rpx 20rpx;
+  border-radius: 30rpx;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  line-height: 1.5;
+  height: auto;
+  box-shadow: 0 2rpx 5rpx rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.delete-btn:active {
+  background-color: rgba(255, 0, 0, 0.2);
+  transform: scale(0.98);
 }
 
 .flower-decoration {

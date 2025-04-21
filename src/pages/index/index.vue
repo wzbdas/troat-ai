@@ -3,7 +3,7 @@
     <!-- 顶部用户信息 -->
     <view class="user-info">
       <view class="user-avatar">
-        <image src="../../static/index/profile.jpg" mode="aspectFit" class="zodiac-icon"></image>
+        <image src="../../static/index/imagetarot.png" mode="aspectFit" class="zodiac-icon"></image>
       </view>
       <view class="user-detail">
         <text class="user-name">{{ userName }}</text>
@@ -14,7 +14,6 @@
         <button class="edit-btn"
         @click="navigateToLocalArchives"
         >编辑</button>
-        <view class="more-actions">•••</view>
       </view>
     </view>
 
@@ -35,35 +34,35 @@
       
       <view class="fortune-items">
         <view class="fortune-item">
+          <text class="item-label">事业</text>
+          <view class="progress-bar">
+            <view class="progress" :style="{ width: fortuneData.career + '%' }"></view>
+          </view>
+          <text class="percentage">{{ fortuneData.career }}%</text>
+        </view>
+        
+        <view class="fortune-item">
           <text class="item-label">爱情</text>
           <view class="progress-bar">
-            <view class="progress" style="width: 81%"></view>
+            <view class="progress" :style="{ width: fortuneData.love + '%' }"></view>
           </view>
-          <text class="percentage">81%</text>
+          <text class="percentage">{{ fortuneData.love }}%</text>
         </view>
         
         <view class="fortune-item">
           <text class="item-label">财富</text>
           <view class="progress-bar">
-            <view class="progress" style="width: 70%"></view>
+            <view class="progress" :style="{ width: fortuneData.wealth + '%' }"></view>
           </view>
-          <text class="percentage">70%</text>
+          <text class="percentage">{{ fortuneData.wealth }}%</text>
         </view>
-        
-        <view class="fortune-item">
-          <text class="item-label">事业</text>
-          <view class="progress-bar">
-            <view class="progress" style="width: 36%"></view>
-          </view>
-          <text class="percentage">36%</text>
-        </view>
-        
+
         <view class="fortune-item">
           <text class="item-label">健康</text>
           <view class="progress-bar">
-            <view class="progress" style="width: 81%"></view>
+            <view class="progress" :style="{ width: fortuneData.health + '%' }"></view>
           </view>
-          <text class="percentage">81%</text>
+          <text class="percentage">{{ fortuneData.health }}%</text>
         </view>
       </view>
       
@@ -76,11 +75,11 @@
     <view class="nav-grid">
       <view class="nav-row">
         <view class="nav-item">
-          <image src="../../static/index/heartTest.png" mode="aspectFit" class="nav-icon"></image>
+          <image src="../../static/index/mbi.png" mode="aspectFit" class="nav-icon"></image>
           <text class="nav-text"  @click="navigateToHeartTest">性格测试</text>
         </view>
         <view class="nav-item">
-          <image src="../../static/index/answerBook.png" mode="aspectFit" class="nav-icon"></image>
+          <image src="../../static/index/daan.png" mode="aspectFit" class="nav-icon"></image>
           <text class="nav-text" @click="navigateToAnswerBook">答案之书</text>
         </view>
         <view class="nav-item">
@@ -88,8 +87,8 @@
           <text class="nav-text" @click="navigateToTarot">塔罗牌</text>
         </view>
         <view class="nav-item">
-          <image src="../../static/index/Maya.png" mode="aspectFit" class="nav-icon"></image>
-          <text class="nav-text">玛雅日历</text>
+          <image src="../../static/index/bazi.png" mode="aspectFit" class="nav-icon"></image>
+          <text class="nav-text" @click="navigateToBazi">生辰八字</text>
         </view>
       </view>
     </view>
@@ -131,7 +130,7 @@
           <view class="card-content">
             <text class="card-title">冥想</text>
             <text class="card-subtitle">心灵宁静之旅</text>
-            <view class="card-arrow">→</view>
+            <view class="card-arrow" @click="navigateTomeditation">→</view>
           </view>
         </view>
         
@@ -139,7 +138,7 @@
           <view class="card-content">
             <text class="card-title">木鱼</text>
             <text class="card-subtitle">平和心境之音</text>
-            <view class="card-arrow">→</view>
+            <view class="card-arrow" @click="navigateTomuyu">→</view>
           </view>
         </view>
       </view>
@@ -151,32 +150,81 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
+import { onShow } from '@dcloudio/uni-app'
+import { generateFortuneData } from '@/utils/fortuneGenerator'
 
-// 用户信息
-const userName = ref('自己...')
-const userBirthday = ref('2000-03-01')
-const userArea = ref(' 北京朝阳区')
+interface UserInfo {
+  name: string
+  birthday: string
+  area: string
+}
 
-// 监听档案选择更新
-onMounted(() => {
-  // 从本地存储读取用户信息
-  const storedUser = uni.getStorageSync('userInfo')
-  if (storedUser) {
-    userName.value = storedUser.name
-    userBirthday.value = storedUser.birthday
-    userArea.value = storedUser.area
-  }
+interface FortuneData {
+  career: number
+  love: number
+  wealth: number
+  health: number
+}
 
-  uni.$on('updateUserInfo', (user) => {
-    userName.value = user.name
-    userBirthday.value = user.birthday
-    userArea.value = user.area
-    // 保存用户信息到本地存储
-    uni.setStorageSync('userInfo', user)
-  })
+const userName = ref('')
+const userBirthday = ref('')
+const userArea = ref('')
+const noticeText = ref('各种活动火热进行中，欢迎报名参加！ APP版本有更多功能，敬请下载使用！')
+const fortuneData = ref<FortuneData>({
+  career: 0,
+  love: 0,
+  wealth: 0,
+  health: 0
 })
 
+// 更新运势数据
+const updateFortuneData = () => {
+  const userInfo = uni.getStorageSync('userInfo')
+  if (userInfo) {
+    const { birthday, area } = userInfo
+    const data = generateFortuneData(birthday, area)
+    fortuneData.value = data
+  }
+}
+
+// 更新用户信息
+const updateUserInfo = () => {
+  const userInfo = uni.getStorageSync('userInfo')
+  if (userInfo) {
+    userName.value = userInfo.name
+    userBirthday.value = userInfo.birthday
+    userArea.value = userInfo.area
+    updateFortuneData()
+  }
+}
+
+// 监听用户信息更新事件 
+const handleUserInfoUpdate = (userInfo: any) => {
+  if (userInfo) {
+    userName.value = userInfo.name
+    userBirthday.value = userInfo.birthday
+    userArea.value = userInfo.area
+    updateFortuneData()
+  }
+}
+
+// 页面加载时获取数据
+onMounted(() => {
+  updateUserInfo()
+  // 添加事件监听
+  uni.$on('updateUserInfo', handleUserInfoUpdate)
+})
+
+// 确保每次页面显示时都更新用户信息
+onShow(() => {
+  updateUserInfo()
+})
+
+// 页面卸载时移除事件监听
+onUnmounted(() => {
+  uni.$off('updateUserInfo', handleUserInfoUpdate)
+})
 import type { _ViewProps, _TextProps, _ImageProps, _ButtonProps } from '@dcloudio/types'
 
 // Declare component types for uni-app
@@ -189,59 +237,63 @@ declare module '@vue/runtime-core' {
   }
 }
 
-const noticeText = ref('各种活动火热进行中，欢迎报名参加！ APP版本有更多功能，敬请下载使用！')
-const fortuneIndex = ref(85)
-
+// 导航方法
 const navigateToLocalArchives = () => {
   uni.navigateTo({
-    url: '/pages/index/IndexPage/LocalArchives',
-    animationType: 'pop-in',
-    animationDuration: 0
+    url: '/pages/index/IndexPage/LocalArchives'
   })
 }
+
 const navigateToLookMore = () => {
   uni.navigateTo({
-    url: '/pages/index/IndexPage/LookMore',
-    animationType: 'pop-in',
-    animationDuration: 0
+    url: '/pages/index/IndexPage/LookMore'
   })
 }
+
 const navigateToHeartTest = () => {
   uni.navigateTo({
-    url: '/pages/index/IndexPage/HeartTest',
-    animationType: 'pop-in',
-    animationDuration: 0
-  })  
-}
-const navigateToAnswerBook = () => {
-  uni.navigateTo({
-    url: '/pages/index/IndexPage/AnswerBook',
-    animationType: 'pop-in',
-    animationDuration: 0
-  }) 
-}
-const navigateToTarot = () => {
-  uni.switchTab({
-    url: '../count/count',
-    animationType: 'pop-in',
-    animationDuration: 0
+    url: '/pages/index/IndexPage/HeartTest'
   })
 }
+
+const navigateToAnswerBook = () => {
+  uni.navigateTo({
+    url: '/pages/index/IndexPage/AnswerBook'
+  })
+}
+const navigateToBazi = () => {
+  uni.navigateTo({
+    url: '/pages/index/IndexPage/Bazi'
+  })
+}
+
+const navigateToTarot = () => {
+  uni.navigateTo({
+    url: '/pages/index/IndexPage/Tarot'
+  })
+}
+
 const navigateToTree = () => {
   uni.navigateTo({
-    url: '/pages/index/IndexPage/Tree',
-    animationType: 'pop-in',
-    animationDuration: 0
-  }) 
+    url: '/pages/index/IndexPage/Tree'
+  })
 }
 
 const navigateToDollas = () => {
   uni.navigateTo({
-    url: '/pages/index/IndexPage/dollas',
-    animationType: 'pop-in',
-    animationDuration: 0
+    url: '/pages/index/IndexPage/dollas'
   })
 }
+const navigateTomeditation = () => {
+  uni.navigateTo({
+    url: '/pages/index/IndexPage/meditation'
+  }) 
+}
+const navigateTomuyu = () => {
+  uni.navigateTo({
+    url: '/pages/index/IndexPage/muyu'
+  })
+} 
 </script>
 
 <style scoped>

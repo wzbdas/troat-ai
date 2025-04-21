@@ -14,6 +14,7 @@
     ],
     "types": [
       "@dcloudio/types",
+      "@dcloudio/uni-ui",
       "@uni-helper/uni-app-types",
       "@types/wechat-miniprogram",
       "@uni-helper/uni-ui-types"

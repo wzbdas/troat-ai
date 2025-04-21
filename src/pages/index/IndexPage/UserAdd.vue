@@ -110,7 +110,6 @@ const saveProfile = async () => {
       title: '请输入昵称',
       icon: 'none'
     });
-    console.log('昵称为空');
     return;
   }
 
@@ -119,14 +118,12 @@ const saveProfile = async () => {
       title: '请选择出生日期',
       icon: 'none'
     });
-    console.log('出生日期为空');
     return;
   }
 
   try {
     // 调用添加用户接口
     const res = await addUser(userForm);
-    console.log('API 响应:', res);
     if ( res.data.code === 200) {
       uni.showToast({
         title: '档案保存成功',
@@ -143,14 +140,12 @@ const saveProfile = async () => {
         title: res.data.message || '保存失败，请重试',
         icon: 'error'
       });
-      console.log('保存失败:', res.data.message);
     }
   } catch (error) {
     uni.showToast({
       title: '保存失败，请重试',
       icon: 'error'
     });
-    console.error('保存档案失败:', error);
   }
 
 };

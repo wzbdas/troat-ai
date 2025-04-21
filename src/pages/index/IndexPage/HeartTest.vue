@@ -21,7 +21,7 @@
         <view class="question-title">{{ index + 1 }}. {{ question.title }}</view>
         <view class="options">
           <view v-for="(option, optionIndex) in question.options" :key="option.value" class="option-item" :class="{ 'option-active': answers[index] === option.value }" @tap="answers[index] = option.value">
-            <radio :checked="answers[index] === option.value" :value="option.value" :name="'question-' + index" />
+            <radio :checked="answers[index] === option.value" :value="option.value" :name="'question-' + index" @click="answers[index] = option.value" :class="{ 'option-active': answers[index] === option.value }" />
             <text class="option-text">{{ option.text }}</text>
             <text class="option-text">{{ option.value }}</text>
           </view>
@@ -29,8 +29,11 @@
       </view>
     </view>
 
-    <!-- 提交按钮 --> 
-    <button class="submit-btn" @tap="submitTest">提交</button>
+    <!-- 底部按钮组 -->
+    <view class="button-group">
+      <button class="reset-btn" @tap="resetTest">重新测试</button>
+      <button class="submit-btn" @tap="submitTest">提交</button>
+    </view>
 
     <!-- 结果弹窗 -->
     <view v-if="showResult" class="result-modal">
@@ -282,6 +285,16 @@ const showResult = ref(false);
 const result = ref('');
 const resultDescription = ref('');
 
+// 重置测试
+const resetTest = () => {
+  answers.value = new Array(28).fill('');
+  showResult.value = false;
+  uni.pageScrollTo({
+    scrollTop: 0,
+    duration: 300
+  });
+};
+
 // 计算MBTI类型
 const calculateMBTI = () => {
   // 分组统计
@@ -427,22 +440,44 @@ const getResultDescription = (type: string) => {
   color: #444;
 }
 
-.submit-btn {
+.button-group {
   position: fixed;
   left: 0;
   right: 0;
   bottom: 30px;
-  width: 80%;
+  width: 90%;
   max-width: 600rpx;
   margin: 0 auto;
-  background:  #f4b9c1;
+  display: flex;
+  justify-content: space-between;
+  gap: 20rpx;
+  z-index: 999;
+}
+
+.reset-btn {
+  flex: 1;
+  background: #f0f0f0;
+  color: #666;
+  padding: 12px 0;
+  border-radius: 30px;
+  font-size: 16px;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.submit-btn {
+  flex: 1;
+  background: #f4b9c1;
   color: white;
   padding: 12px 0;
   border-radius: 30px;
   font-size: 16px;
   text-align: center;
   box-shadow: 0 4px 12px rgba(255, 107, 129, 0.3);
-  z-index: 999;
+}
+
+.question-list {
+  padding-bottom: 120rpx;
 }
 
 .result-modal {

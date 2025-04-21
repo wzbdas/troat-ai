@@ -1,21 +1,7 @@
 <template>
   <view class="container">
 
-    <!-- 搜索区域 -->
-    <view class="search-section">
-      <view class="filter-row">
-        <view class="filter-item active">
-          <text>全部</text>
-        </view>
-        <view class="filter-item">
-          <text>名称</text>
-        </view>
-      </view>
-      <view class="search-box">
-        <input type="text" placeholder="可输入搜索内容" class="search-input" />
-        <button class="search-btn">搜索</button>
-      </view>
-    </view>
+
 
     <!-- 功能按钮区 -->
     <view class="function-bar">
@@ -36,13 +22,13 @@
       </view>
       <view v-else class="archive-item" v-for="(user, index) in userList" :key="index">
         <view class="item-left">
-          <radio :checked="selectedArchive===user.id" @click="selectedArchive=user.id" class="archive-radio" />
+          <radio :checked="selectedArchive === user.id" @click="handleRadioSelect(user.id)" class="archive-radio" />
           <text class="gender-icon">{{ user.sex === '男' ? '♀' : '♂' }}</text>
-          <text class="archive-info">{{ user.name }}{{ user.birthday }} {{ user.area }}</text>
+          <text class="archive-info">{{ user.name }} {{ user.birthday }} {{ user.area }}</text>
         </view>
         <view class="item-right">
           <text class="demo-tag" v-if="user.isDemo">示例</text>
-          <button class="edit-btn">编辑</button>
+          <button class="edit-btn" @click="handleDelete(user.id)">删除</button>
         </view>
       </view>
     </scroll-view>
@@ -66,40 +52,92 @@
 </template>
 
 <script setup lang="ts">
-
-
 import { ref, onMounted } from 'vue'
-// 修改导入路径，使用相对路径
-import { getUserList } from '../../../servers/index'
+import { getUserList,deleteUser } from '../../../servers/index'
+
+interface User {
+  id: string | number
+  name: string
+  sex: string
+  birthday: string
+  area: string
+  isDemo?: boolean
+}
 
 // 定义用户列表响应式数据
-const userList = ref([])
-const selectedArchive = ref(null)
+const userList = ref<User[]>([])
+const selectedArchive = ref<string | number | null>(null)
 
 // 获取用户列表数据
 const fetchUserList = async () => {
- const res = await getUserList()
- console.log(res);
- 
- if(res.data.code == 200){
-    userList.value = res.data.data
-    console.log(userList.value)
-  }else{
-    console.log('获取用户列表失败')
+  try {
+    const res = await getUserList()
+    if (res.data.code === 200) {
+      userList.value = res.data.data
+      // 尝试从本地存储获取上次选择的档案
+      const lastSelectedUser = uni.getStorageSync('userInfo')
+      if (lastSelectedUser) {
+        selectedArchive.value = lastSelectedUser.id
+      }
+    } else {
+      uni.showToast({
+        title: '获取档案列表失败',
+        icon: 'none'
+      })
+    }
+  } catch (err) {
+    uni.showToast({
+      title: '网络错误，请重试',
+      icon: 'none'
+    })
   }
- }
+}
+
+// 处理单选框选择
+const handleRadioSelect = (userId: string | number) => {
+  selectedArchive.value = userId
+}
 
 // 确认选择按钮点击事件
 const confirmSelection = () => {
-  if (selectedArchive.value) {
-    const selectedUser = userList.value.find(user => user.id === selectedArchive.value)
-    if (selectedUser) {
-      uni.$emit('updateUserInfo', selectedUser)
-      uni.navigateBack()
-    }
-  } else {
+  if (!selectedArchive.value) {
     uni.showToast({
       title: '请选择一个档案',
+      icon: 'none'
+    })
+    return
+  }
+
+  const selectedUser = userList.value.find(user => user.id === selectedArchive.value)
+  if (!selectedUser) {
+    uni.showToast({
+      title: '选择的档案不存在',
+      icon: 'none'
+    })
+    return
+  }
+
+  try {
+    // 保存到本地存储
+    uni.setStorageSync('userInfo', selectedUser)
+    
+    // 发送事件更新其他页面
+    uni.$emit('updateUserInfo', selectedUser)
+    
+    // 显示成功提示
+    uni.showToast({
+      title: '已选择档案',
+      icon: 'success',
+      duration: 1500
+    })
+    
+    // 延迟返回，确保事件被处理
+    setTimeout(() => {
+      uni.navigateBack()
+    }, 1500)
+  } catch (err) {
+    uni.showToast({
+      title: '保存失败，请重试',
       icon: 'none'
     })
   }
@@ -118,6 +156,30 @@ const goBack = () => {
 const navigateToUserAdd = () => {
   uni.navigateTo({
     url: '/pages/index/IndexPage/UserAdd'
+  })
+}
+const handleDelete = (userId: string | number) => {
+  uni.showModal({
+    title: '确认删除',
+    content: '确认要删除该档案吗？',
+    success: (res) => {
+      if (res.confirm) {
+        deleteUser({ id: userId }).then(res => {
+          if (res.data.code === 200) {
+            uni.showToast({
+              title: '删除成功',
+              icon: 'none'
+            })
+            fetchUserList()
+          } else {
+            uni.showToast({
+              title: '删除失败',
+              icon: 'none'
+            })
+          }
+        })
+      }
+    } 
   })
 }
 </script>
@@ -148,10 +210,6 @@ const navigateToUserAdd = () => {
   gap: 20rpx;
 }
 
-.search-section {
-  background-color: #fff;
-  padding: 20rpx;
-}
 
 .filter-row {
   display: flex;
@@ -219,9 +277,10 @@ page {
 .archives-list {
   background-color: #fff;
   margin-top: 20rpx;
-  margin-bottom: 20rpx;
+  margin-bottom: 40rpx;
   width: 100%;
-  height: 100%;
+  height: 500px;
+  flex:1;
 }
 
 .archive-item {

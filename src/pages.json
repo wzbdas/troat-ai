@@ -82,6 +82,12 @@
 			}
 		},
 		{
+			"path": "pages/index/IndexPage/Bazi",
+			"style": {
+				"navigationBarTitleText": "生辰八字"
+			}
+		},
+		{
 			"path": "pages/index/IndexPage/Tree",
 			"style": {
 				"navigationBarTitleText": "树洞"
@@ -97,6 +103,24 @@
 			"path": "pages/index/IndexPage/dollas",
 			"style": {
 				"navigationBarTitleText": "解忧娃娃"
+			}
+		},
+		{
+			"path": "pages/index/IndexPage/Memory",
+			"style": {
+				"navigationBarTitleText": "我的回忆"
+			}
+		},
+		{
+			"path": "pages/index/IndexPage/meditation",
+			"style": {
+				"navigationBarTitleText": "冥想"
+			}
+		},
+		{
+			"path": "pages/index/IndexPage/muyu",
+			"style": {
+				"navigationBarTitleText": "木鱼"
 			}
 		},
 		{

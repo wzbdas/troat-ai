@@ -3,7 +3,6 @@ import axios from "axios";
 let http = axios.create({
     baseURL: "http://localhost:3000/",//基准路径 基准路径会自动和url地址拼接
     headers: {},
-    timeout: 5000
 })
 
 // 请求拦截器和响应拦截器

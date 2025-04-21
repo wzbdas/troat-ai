@@ -35,7 +35,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
-
+import { addQingsu } from '../../../servers/index';
 const content = ref('');
 
 const handleSubmit = () => {
@@ -47,7 +47,22 @@ const handleSubmit = () => {
     return;
   }
   // TODO: 实现提交逻辑
-  console.log('提交内容:', content.value);
+  addQingsu({
+    content: content.value
+  }).then(res => {
+    if(res.data.code === 200) {
+        uni.showToast({
+        title: '倾诉成功',
+        icon: 'success'
+      }); 
+    }else{
+      uni.showToast({
+        title: '倾诉失败',
+        icon: 'none'
+      });
+    }
+    content.value = '';
+  })
 };
 
 const goToTreeHistory = () => {
