@@ -1,0 +1,71 @@
+{
+  "pages": [
+    {
+      "path": "pages/index/index",
+      "style": {
+        "navigationBarTitleText": "首页"
+      }
+    },
+    {
+      "path": "pages/login/login",
+      "style": {
+        "navigationBarTitleText": "登录"
+      }
+    }
+  ],
+  "subPackages": [
+    {
+      "root": "pages/my",
+      "pages": [
+        {
+          "path": "my",
+          "style": {
+            "navigationBarTitleText": "我的"
+          }
+        },
+        {
+          "path": "component/setting",
+          "style": {
+            "navigationBarTitleText": "设置"
+          }
+        },
+        {
+          "path": "component/order",
+          "style": {
+            "navigationBarTitleText": "订单"
+          }
+        },
+        {
+          "path": "component/coupon",
+          "style": {
+            "navigationBarTitleText": "卡券"
+          }
+        },
+        {
+          "path": "component/about",
+          "style": {
+            "navigationBarTitleText": "关于我们"
+          }
+        },
+        {
+          "path": "component/question",
+          "style": {
+            "navigationBarTitleText": "问题反馈"
+          }
+        },
+        {
+          "path": "component/actives",
+          "style": {
+            "navigationBarTitleText": "我的活动"
+          }
+        }
+      ]
+    }
+  ],
+  "globalStyle": {
+    "navigationBarTextStyle": "black",
+    "navigationBarTitleText": "塔塔图灵",
+    "navigationBarBackgroundColor": "#F8F8F8",
+    "backgroundColor": "#F8F8F8"
+  }
+}
