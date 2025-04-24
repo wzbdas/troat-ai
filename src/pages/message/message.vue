@@ -28,9 +28,26 @@
     <view class="chat-container">
       <!-- 聊天消息 -->
       <scroll-view scroll-y class="chat-box" :scroll-top="scrollTop">
-        <view v-for="(message, index) in chatMessages" :key="index" class="message-item" :class="[message.sender === 'user' ? 'user-message-container' : 'ai-message-container']">
-          <view :class="[message.sender === 'user' ? 'user-message' : 'ai-message']">
-            <text class="message-text">{{ message.text }}</text>
+        <view v-for="(message, index) in chatMessages" :key="index" class="message-item" :class="message.sender === 'user' ? 'user-message-container' : 'ai-message-container'">
+          <!-- AI 消息 -->
+          <view v-if="message.sender === 'ai'" class="ai-message-wrapper">
+            <image src="https://tse3-mm.cn.bing.net/th/id/OIP-C.iCXuE_HnNhT_teEWcHU7xQAAAA?rs=1&pid=ImgDetMain" class="avatar ai-avatar" />
+            <view class="message-content">
+              <text class="username">小智AI</text>
+              <view class="message-bubble ai-bubble">
+                <text class="message-text">{{ message.text }}</text>
+              </view>
+            </view>
+          </view>
+          <!-- 用户消息 -->
+          <view v-else class="user-message-wrapper">
+            <view class="message-content">
+              <text class="username user-name">{{ userName }}</text>
+              <view class="message-bubble user-bubble">
+                <text class="message-text">{{ message.text }}</text>
+              </view>
+            </view>
+            <image :src="userAvatar" class="avatar user-avatar" />
           </view>
         </view>
       </scroll-view>
@@ -44,6 +61,14 @@
           @confirm="sendMessage"
         />
         <button class="send-button" @click="sendMessage">发送</button>
+      </view>
+    </view>
+
+    <!-- 加载动画 -->
+    <view v-if="isLoading" class="loading-overlay">
+      <view class="loading-content">
+        <view class="gear"></view>
+        <text class="loading-text">AI思考中...</text>
       </view>
     </view>
   </view>
@@ -70,7 +95,6 @@ interface ChatMessage {
 export default defineComponent({
   name: "Message",
   setup() {
-    // 初始化牌数据，防止 undefined 错误
     const pastCard = ref<Card>({
       id: 0,
       frontImage: '',
@@ -103,8 +127,13 @@ export default defineComponent({
     const inputMessage = ref("");
     const chatMessages = ref<ChatMessage[]>([]);
     const scrollTop = ref(0);
+    const isLoading = ref(false);
 
-    // 加载塔罗牌、用户提问和初始解读
+    // 用户名称和头像
+    const userName = ref("游客");
+    const userAvatar = ref("https://tse4-mm.cn.bing.net/th/id/OIP-C.aCW_Ax9FtUGhnDBetciYoQAAAA?w=374&h=329&rs=1&pid=ImgDetMain");
+
+    // 页面加载时获取用户信息
     onLoad(async (options) => {
       if (options?.pastCard) {
         pastCard.value = JSON.parse(decodeURIComponent(options.pastCard));
@@ -120,39 +149,40 @@ export default defineComponent({
       }
       if (options?.reading) {
         reading.value = decodeURIComponent(options.reading);
-        // 将解读作为第一条 AI 消息添加到聊天中
         chatMessages.value.push({
           sender: 'ai',
           text: reading.value,
         });
         scrollToBottom();
       }
-      // 调试：打印接收到的牌信息
-      console.log("Message 页面接收到的牌信息:", {
-        pastCard: pastCard.value,
-        presentCard: presentCard.value,
-        futureCard: futureCard.value,
-      });
+
+      try {
+        const userInfo = uni.getStorageSync('userInfo');
+        if (userInfo) {
+          const parsedInfo = JSON.parse(userInfo);
+          userName.value = parsedInfo.name || "未设置昵称";
+          userAvatar.value = parsedInfo.img || userAvatar.value;
+        }
+      } catch (error) {
+        console.error('获取用户信息失败：', error);
+      }
     });
 
-    // 发送用户消息到后端并获取 AI 响应
     const sendMessage = async () => {
       const question = inputMessage.value.trim();
       if (!question) return;
 
-      // 将用户消息添加到聊天
       chatMessages.value.push({ sender: 'user', text: question });
       inputMessage.value = "";
       scrollToBottom();
 
+      isLoading.value = true;
+
       try {
-        // 使用 uni.request 发送请求到后端
         uni.request({
-          url: 'http://localhost:3000/api/ai/ask',
+          url: 'http://localhost:3000/api/chat',
           method: 'POST',
-          data: {
-            question: question,
-          },
+          data: { question },
           success: (res) => {
             if (res.data.answer) {
               chatMessages.value.push({ sender: 'ai', text: res.data.answer });
@@ -166,18 +196,21 @@ export default defineComponent({
             chatMessages.value.push({ sender: 'ai', text: '发送消息失败，请稍后再试。' });
             scrollToBottom();
           },
+          complete: () => {
+            isLoading.value = false;
+          },
         });
       } catch (error) {
         console.error('Error sending message to AI:', error);
         chatMessages.value.push({ sender: 'ai', text: '发送消息失败，请稍后再试。' });
         scrollToBottom();
+        isLoading.value = false;
       }
     };
 
-    // 滚动到聊天容器底部
     const scrollToBottom = () => {
       setTimeout(() => {
-        scrollTop.value = chatMessages.value.length * 60; // 每条消息大致高度
+        scrollTop.value = chatMessages.value.length * 60;
       }, 100);
     };
 
@@ -191,6 +224,9 @@ export default defineComponent({
       chatMessages,
       sendMessage,
       scrollTop,
+      isLoading,
+      userName,
+      userAvatar,
     };
   },
 });
@@ -266,33 +302,86 @@ export default defineComponent({
 }
 
 .message-item {
-  margin-bottom: 10px;
+  margin-bottom: 20px;
   display: flex;
   width: 100%;
 }
 
 .ai-message-container {
   justify-content: flex-start;
+  margin-left: 5px;
 }
 
 .user-message-container {
   justify-content: flex-end;
+  margin-right: 5px;
 }
 
-.user-message {
-  background-color: #4a90e2;
-  color: white;
+.ai-message-wrapper,
+.user-message-wrapper {
+  display: flex;
+  align-items: flex-start;
+  max-width: 70%;
+}
+
+.ai-message-wrapper {
+  flex-direction: row;
+}
+
+.user-message-wrapper {
+  flex-direction: row;
+  justify-content: flex-end;
+}
+
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+}
+
+.ai-avatar {
+  margin-right: 10px;
+}
+
+.user-avatar {
+  margin-left: 10px;
+}
+
+.message-content {
+  display: flex;
+  flex-direction: column;
+  max-width: calc(100% - 50px);
+}
+
+.username {
+  font-size: 14px;
+  color: #ccc;
+  margin-bottom: 5px;
+}
+
+.user-name {
+  text-align: right;
+}
+
+.message-bubble {
   border-radius: 10px;
   padding: 10px;
-  max-width: 80%;
+  max-width: 100%;
+  word-wrap: break-word;
 }
 
-.ai-message {
+.ai-bubble {
   background-color: #f1f1f1;
   color: black;
-  border-radius: 10px;
-  padding: 10px;
-  max-width: 80%;
+}
+
+.user-bubble {
+  background-color: #4a4a8a;
+  color: white;
+}
+
+.message-text {
+  font-size: 14px;
 }
 
 .input-container {
@@ -332,5 +421,67 @@ export default defineComponent({
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.loading-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.loading-text {
+  color: white;
+  margin-top: 20px;
+  font-size: 16px;
+}
+
+.gear {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background-color: #ffcc00;
+  position: relative;
+  animation: rotate 2s linear infinite;
+}
+
+.gear:before {
+  content: "";
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background-color: transparent;
+  border: 10px solid #fff;
+  box-sizing: border-box;
+}
+
+.gear:after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: #4a4a8a;
+}
+
+@keyframes rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 </style>

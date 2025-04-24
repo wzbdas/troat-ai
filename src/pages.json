@@ -171,6 +171,13 @@
 			}
 		},
 		{
+			"path": "pages/message/message",
+			"style": {
+			"navigationBarTitleText": "AI解析",
+			"navigationBarBackgroundColor": "#ffffff"
+			}
+		},
+		{
 			"path": "pages/my/component/coupon",
 			"style": {
 				"navigationBarTitleText": "我的卡券",
@@ -189,131 +196,129 @@
 		{
 			"path": "pages/my/component/about",
 			"style": {
-			  "navigationBarTitleText": "关于",
-			  "navigationBarBackgroundColor": "#ffffff",
+				"navigationBarTitleText": "关于",
+				"navigationBarBackgroundColor": "#ffffff",
 				"navigationBarTextStyle": "black"
 			}
-		  },
-		  {
+		},
+		{
 			"path": "pages/my/component/setting",
 			"style": {
-			  "navigationBarTitleText": "设置",
-			   "navigationBarBackgroundColor": "#ffffff",
+				"navigationBarTitleText": "设置",
+				"navigationBarBackgroundColor": "#ffffff",
 				"navigationBarTextStyle": "black"
 			}
-		  },
-		  {
+		},
+		{
 			"path": "pages/my/component/jie",
 			"style": {
-			  "navigationBarTitleText": "塔罗解读详情",
-			   "navigationBarBackgroundColor": "#ffffff",
+				"navigationBarTitleText": "塔罗解读详情",
+				"navigationBarBackgroundColor": "#ffffff",
 				"navigationBarTextStyle": "black"
 			}
-		  },
-		  {
+		},
+		{
 			"path": "pages/my/component/password",
 			"style": {
-			  "navigationBarTitleText": "设置密码",
-			   "navigationBarBackgroundColor": "#ffffff",
+				"navigationBarTitleText": "设置密码",
+				"navigationBarBackgroundColor": "#ffffff",
 				"navigationBarTextStyle": "black"
 			}
-		  },
-
+		},
 		{
 			"path": "pages/my/component/user",
 			"style": {
-			  "navigationBarTitleText": "用户服务协议",
-			  "navigationBarBackgroundColor": "#ffffff",
-			  "navigationBarTextStyle": "black"
+				"navigationBarTitleText": "用户服务协议",
+				"navigationBarBackgroundColor": "#ffffff",
+				"navigationBarTextStyle": "black"
 			}
-		  },
-		  {
+		},
+		{
 			"path": "pages/my/component/Policy",
 			"style": {
-			  "navigationBarTitleText": "隐私政策",
-			  "navigationBarBackgroundColor": "#ffffff",
-			  "navigationBarTextStyle": "black"
+				"navigationBarTitleText": "隐私政策",
+				"navigationBarBackgroundColor": "#ffffff",
+				"navigationBarTextStyle": "black"
 			}
-		  },
-		  {
+		},
+		{
 			"path": "pages/my/component/instruction",
 			"style": {
-			  "navigationBarTitleText": "说明",
-			  "navigationBarBackgroundColor": "#ffffff",
-			  "navigationBarTextStyle": "black"
+				"navigationBarTitleText": "说明",
+				"navigationBarBackgroundColor": "#ffffff",
+				"navigationBarTextStyle": "black"
 			}
-		  },
-		  {
+		},
+		{
 			"path": "pages/my/component/aiai",
 			"style": {
-			  "navigationBarTitleText": "AI解读记录",
-			  "navigationBarBackgroundColor": "#ffffff",
-			  "navigationBarTextStyle": "black"
+				"navigationBarTitleText": "AI解读记录",
+				"navigationBarBackgroundColor": "#ffffff",
+				"navigationBarTextStyle": "black"
 			}
-		  },
-		  {
+		},
+		{
 			"path": "pages/my/component/plan",
 			"style": {
-			  "navigationBarTitleText": "说明",
-			  "navigationBarBackgroundColor": "#ffffff",
-			  "navigationBarTextStyle": "black"
+				"navigationBarTitleText": "说明",
+				"navigationBarBackgroundColor": "#ffffff",
+				"navigationBarTextStyle": "black"
 			}
-		  },
-		  {
+		},
+		{
 			"path": "pages/my/component/phone",
 			"style": {
-			  "navigationBarTitleText": "绑定手机",
-			  "navigationBarBackgroundColor": "#ffffff",
-			  "navigationBarTextStyle": "black"
+				"navigationBarTitleText": "绑定手机",
+				"navigationBarBackgroundColor": "#ffffff",
+				"navigationBarTextStyle": "black"
 			}
-		  },
-		  {
+		},
+		{
 			"path": "pages/my/component/actives",
 			"style": {
-			  "navigationBarTitleText": "我的活动",
-			  "navigationBarBackgroundColor": "#ffffff",
-			  "navigationBarTextStyle": "black"
+				"navigationBarTitleText": "我的活动",
+				"navigationBarBackgroundColor": "#ffffff",
+				"navigationBarTextStyle": "black"
 			}
-		  },
-		  {
+		},
+		{
 			"path": "pages/my/component/server",
 			"style": {
-			  "navigationBarTitleText": "人工客服",
-			  "navigationBarBackgroundColor": "#ffffff",
-			  "navigationBarTextStyle": "black"
+				"navigationBarTitleText": "人工客服",
+				"navigationBarBackgroundColor": "#ffffff",
+				"navigationBarTextStyle": "black"
 			}
-		  },
-		  {
+		},
+		{
 			"path": "pages/my/component/speak",
 			"style": {
-			  "navigationBarTitleText": "登录问题说明",
-			  "navigationBarBackgroundColor": "#ffffff",
-			  "navigationBarTextStyle": "black"
+				"navigationBarTitleText": "登录问题说明",
+				"navigationBarBackgroundColor": "#ffffff",
+				"navigationBarTextStyle": "black"
 			}
-		  },
-		  {
+		},
+		{
 			"path": "pages/my/component/individuation",
 			"style": {
-			  "navigationBarTitleText": "个性化设置",
-			  "navigationBarBackgroundColor": "#ffffff",
-			  "navigationBarTextStyle": "black"
+				"navigationBarTitleText": "个性化设置",
+				"navigationBarBackgroundColor": "#ffffff",
+				"navigationBarTextStyle": "black"
 			}
-		  },
-		  {
+		},
+		{
 			"path": "pages/my/header",
 			"style": {
-			  "navigationStyle": "custom"
+				"navigationStyle": "custom"
 			}
-		  },
-		  {
+		},
+		{
 			"path": "pages/my/register",
 			"style": {
-			  "navigationStyle": "custom"
+				"navigationStyle": "custom"
 			}
-		  }
-		  
+		}
 	],
-	"globalStyle": {              
+	"globalStyle": {
 		"navigationBarTextStyle": "black",
 		"navigationBarTitleText": "uni-app",
 		"navigationBarBackgroundColor": "#F8F8F8",
@@ -324,28 +329,27 @@
 			{
 				"pagePath": "pages/index/index",
 				"text": "首页",
-				"iconPath":"static/icon/index.png",
-				"selectedIconPath":"static/icon/index-active.png"
+				"iconPath": "static/icon/index.png",
+				"selectedIconPath": "static/icon/index-active.png"
 			},
 			{
 				"pagePath": "pages/count/count",
 				"text": "算一算",
-				"iconPath":"static/icon/count.png",
-				"selectedIconPath":"static/icon/count-active.png"
+				"iconPath": "static/icon/count.png",
+				"selectedIconPath": "static/icon/count-active.png"
 			},
 			{
 				"pagePath": "pages/star/star",
 				"text": "星盘",
-				"iconPath":"static/icon/star.png",
-				"selectedIconPath":"static/icon/star-active.png"
+				"iconPath": "static/icon/star.png",
+				"selectedIconPath": "static/icon/star-active.png"
 			},
 			{
 				"pagePath": "pages/my/my",
 				"text": "我的",
-				"iconPath":"static/icon/my.png",
-				"selectedIconPath":"static/icon/my-active.png"
+				"iconPath": "static/icon/my.png",
+				"selectedIconPath": "static/icon/my-active.png"
 			}
 		]
 	}
-	
 }

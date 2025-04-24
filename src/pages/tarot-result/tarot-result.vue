@@ -85,8 +85,21 @@ interface Card {
   isFlipping: boolean;
   isHidden: boolean;
   position: string;
-  name?: string; // 添加 name 字段
-  reversed?: boolean; // 添加 reversed 字段
+  name?: string;
+  reversed?: boolean;
+}
+
+interface UserInfo {
+  id: number;
+  phone: string;
+  img: string;
+  isOnline: number;
+  moonsign: string;
+  name: string;
+  risesign: string;
+  sex: string;
+  sunsign: string;
+  surplus: number;
 }
 
 // 塔罗牌 ID 到名称的映射表
@@ -290,7 +303,6 @@ export default defineComponent({
         const parsedFutureCard = JSON.parse(decodeURIComponent(options.futureCard));
         futureCard.value = enrichTarotCard(parsedFutureCard);
       }
-      // 调试：打印转换后的牌信息
       console.log("转换后的牌信息:", {
         pastCard: pastCard.value,
         presentCard: presentCard.value,
@@ -307,40 +319,10 @@ export default defineComponent({
       updateCharCount();
     };
 
-    // 将用户提问存储到本地
-    const saveQuestionToStorage = (question: string) => {
-      uni.getStorage({
-        key: "userQuestions",
-        success: (res) => {
-          const questions = res.data ? [...res.data, question] : [question];
-          uni.setStorage({
-            key: "userQuestions",
-            data: questions,
-            success: () => {
-              console.log("问题已成功存储到本地:", question);
-            },
-            fail: (error) => {
-              console.error("存储失败:", error);
-            },
-          });
-        },
-        fail: () => {
-          uni.setStorage({
-            key: "userQuestions",
-            data: [question],
-            success: () => {
-              console.log("问题已成功存储到本地:", question);
-            },
-            fail: (error) => {
-              console.error("存储失败:", error);
-            },
-          });
-        },
-      });
-    };
-
     const submit = () => {
-      if (!userInput.value) {
+      // 去除首尾空格，确保输入不为空
+      const trimmedInput = userInput.value.trim();
+      if (!trimmedInput) {
         uni.showToast({
           title: "请输入你的感受",
           icon: "none",
@@ -348,29 +330,16 @@ export default defineComponent({
         return;
       }
 
-      // 将当前用户提问存储到本地
-      saveQuestionToStorage(userInput.value);
-
       // 显示加载动画
       isLoading.value = true;
 
-      // 规范化 tarotCard 数据，包含 id、name、reversed 和 position
+      // 规范化 tarotCard 数据
       const tarotCards = [
         pastCard.value ? { id: pastCard.value.id, name: pastCard.value.name, reversed: pastCard.value.reversed, position: "past" } : null,
-        presentCard.value ? { id: presentCard.value.id, name: presentCard.value.name, reversed: presentCard.value.reversed, position: "present" } : null,
-        futureCard.value ? { id: futureCard.value.id, name: futureCard.value.name, reversed: futureCard.value.reversed, position: "future" } : null,
+        presentCard.value ? { id: presentCard.value.id, name: presentCard.value.name, reversed: pastCard.value.reversed, position: "present" } : null,
+        futureCard.value ? { id: futureCard.value.id, name: futureCard.value.name, reversed: pastCard.value.reversed, position: "future" } : null,
       ].filter((card): card is { id: number; name: string; reversed: boolean; position: string } => card !== null);
 
-      console.log("发送塔罗牌解析请求:", {
-        url: "http://localhost:3000/api/tarot/reading",
-        data: {
-          tarotCard: tarotCards,
-          questionType: "general",
-          userQuestion: userInput.value,
-        },
-      });
-
-      // 确保三张牌都存在
       if (tarotCards.length !== 3) {
         uni.showToast({
           title: "塔罗牌数据不完整",
@@ -380,57 +349,331 @@ export default defineComponent({
         return;
       }
 
-      // 使用 uni.request 发送请求
-      uni.request({
-        url: "http://localhost:3000/api/tarot/reading",
-        method: "POST",
-        data: {
+      // 获取 userInfo 数据（区分 H5 和小程序）
+      let userInfo: UserInfo | null = null;
+
+      // #ifdef MP-WEIXIN
+      // 小程序端：优先使用同步方法
+      try {
+        userInfo = uni.getStorageSync('userInfo');
+        console.log("小程序端 - 同步获取到的 userInfo:", userInfo);
+
+        // 如果 userInfo 是字符串，解析为对象
+        if (typeof userInfo === 'string') {
+          try {
+            userInfo = JSON.parse(userInfo);
+          } catch (e) {
+            console.error("小程序端 - 解析 userInfo 失败:", e);
+            userInfo = null;
+          }
+        }
+      } catch (e) {
+        console.error("小程序端 - 同步获取 userInfo 失败:", e);
+        userInfo = null;
+      }
+      // #endif
+
+      // #ifdef H5
+      // H5 端：只能使用异步方法
+      console.log("H5 端 - 尝试异步获取 userInfo");
+      // #endif
+
+      // 如果同步获取失败（小程序端）或 H5 端，直接使用异步方法
+      if (!userInfo) {
+        uni.getStorage({
+          key: "userInfo",
+          success: (res) => {
+            userInfo = res.data;
+            console.log("异步获取到的 userInfo 原始数据:", userInfo);
+            console.log("userInfo 类型:", typeof userInfo);
+
+            // 如果 userInfo 是字符串，解析为对象
+            if (typeof userInfo === 'string') {
+              try {
+                userInfo = JSON.parse(userInfo);
+              } catch (e) {
+                console.error("解析 userInfo 失败:", e);
+                userInfo = null;
+              }
+            }
+
+            const userId = userInfo && userInfo.id ? String(userInfo.id) : "anonymous";
+            console.log("获取到的 userId:", userId);
+
+            // 构造请求数据
+            const requestData = {
+              tarotCard: tarotCards,
+              questionType: "general",
+              userQuestion: trimmedInput,
+              userId: userId,
+            };
+
+            console.log("发送请求数据:", JSON.stringify(requestData));
+
+            // 发送请求（区分 H5 和小程序）
+            // #ifdef H5
+            uni.request({
+              url: "http://localhost:3000/api/tarot/reading",
+              method: "POST",
+              data: JSON.stringify(requestData), // H5 端手动序列化
+              header: {
+                "Content-Type": "application/json",
+              },
+              success: (res: any) => {
+                isLoading.value = false;
+                console.log("H5 端 - 塔罗牌解析响应:", res);
+                if (res.data.success) {
+                  uni.navigateTo({
+                    url: `/pages/message/message?pastCard=${encodeURIComponent(
+                      JSON.stringify(pastCard.value)
+                    )}&presentCard=${encodeURIComponent(
+                      JSON.stringify(presentCard.value)
+                    )}&futureCard=${encodeURIComponent(
+                      JSON.stringify(futureCard.value)
+                    )}&userQuestion=${encodeURIComponent(trimmedInput)}&reading=${encodeURIComponent(
+                      res.data.reading
+                    )}`,
+                  });
+                  uni.showToast({
+                    icon: "success",
+                  });
+                  userInput.value = "";
+                  charCount.value = 0;
+                } else {
+                  uni.showToast({
+                    title: res.data.message || "解读失败",
+                    icon: "none",
+                  });
+                }
+              },
+              fail: (error) => {
+                isLoading.value = false;
+                uni.showToast({
+                  title: "服务器错误",
+                  icon: "none",
+                });
+                console.error("H5 端 - 塔罗牌解读错误:", error);
+              },
+            });
+            // #endif
+
+            // #ifdef MP-WEIXIN
+            uni.request({
+              url: "http://localhost:3000/api/tarot/reading",
+              method: "POST",
+              data: requestData, // 小程序端直接传递对象
+              header: {
+                "Content-Type": "application/json",
+              },
+              success: (res: any) => {
+                isLoading.value = false;
+                console.log("小程序端 - 塔罗牌解析响应:", res);
+                if (res.data.success) {
+                  uni.navigateTo({
+                    url: `/pages/message/message?pastCard=${encodeURIComponent(
+                      JSON.stringify(pastCard.value)
+                    )}&presentCard=${encodeURIComponent(
+                      JSON.stringify(presentCard.value)
+                    )}&futureCard=${encodeURIComponent(
+                      JSON.stringify(futureCard.value)
+                    )}&userQuestion=${encodeURIComponent(trimmedInput)}&reading=${encodeURIComponent(
+                      res.data.reading
+                    )}`,
+                  });
+                  uni.showToast({
+                 
+                    icon: "success",
+                  });
+                  userInput.value = "";
+                  charCount.value = 0;
+                } else {
+                  uni.showToast({
+                    title: res.data.message || "解读失败",
+                    icon: "none",
+                  });
+                }
+              },
+              fail: (error) => {
+                isLoading.value = false;
+                uni.showToast({
+                  title: "服务器错误",
+                  icon: "none",
+                });
+                console.error("小程序端 - 塔罗牌解读错误:", error);
+              },
+            });
+            // #endif
+          },
+          fail: (err) => {
+            console.error("异步获取 userInfo 失败:", err);
+            const userId = "anonymous";
+            console.log("获取到的 userId:", userId);
+
+            const requestData = {
+              tarotCard: tarotCards,
+              questionType: "general",
+              userQuestion: trimmedInput,
+              userId: userId,
+            };
+
+            console.log("发送请求数据:", JSON.stringify(requestData));
+
+            // #ifdef H5
+            uni.request({
+              url: "http://localhost:3000/api/tarot/reading",
+              method: "POST",
+              data: JSON.stringify(requestData),
+              header: {
+                "Content-Type": "application/json",
+              },
+              success: (res: any) => {
+                isLoading.value = false;
+                console.log("H5 端 - 塔罗牌解析响应:", res);
+                if (res.data.success) {
+                  uni.navigateTo({
+                    url: `/pages/message/message?pastCard=${encodeURIComponent(
+                      JSON.stringify(pastCard.value)
+                    )}&presentCard=${encodeURIComponent(
+                      JSON.stringify(pastCard.value)
+                    )}&futureCard=${encodeURIComponent(
+                      JSON.stringify(futureCard.value)
+                    )}&userQuestion=${encodeURIComponent(trimmedInput)}&reading=${encodeURIComponent(
+                      res.data.reading
+                    )}`,
+                  });
+                  uni.showToast({
+                  
+                    icon: "success",
+                  });
+                  userInput.value = "";
+                  charCount.value = 0;
+                } else {
+                  uni.showToast({
+                    title: res.data.message || "解读失败",
+                    icon: "none",
+                  });
+                }
+              },
+              fail: (error) => {
+                isLoading.value = false;
+                uni.showToast({
+                  title: "服务器错误",
+                  icon: "none",
+                });
+                console.error("H5 端 - 塔罗牌解读错误:", error);
+              },
+            });
+            // #endif
+
+            // #ifdef MP-WEIXIN
+            uni.request({
+              url: "http://localhost:3000/api/tarot/reading",
+              method: "POST",
+              data: requestData,
+              header: {
+                "Content-Type": "application/json",
+              },
+              success: (res: any) => {
+                isLoading.value = false;
+                console.log("小程序端 - 塔罗牌解析响应:", res);
+                if (res.data.success) {
+                  uni.navigateTo({
+                    url: `/pages/message/message?pastCard=${encodeURIComponent(
+                      JSON.stringify(pastCard.value)
+                    )}&presentCard=${encodeURIComponent(
+                      JSON.stringify(presentCard.value)
+                    )}&futureCard=${encodeURIComponent(
+                      JSON.stringify(futureCard.value)
+                    )}&userQuestion=${encodeURIComponent(trimmedInput)}&reading=${encodeURIComponent(
+                      res.data.reading
+                    )}`,
+                  });
+                  uni.showToast({
+                    
+                    icon: "success",
+                  });
+                  userInput.value = "";
+                  charCount.value = 0;
+                } else {
+                  uni.showToast({
+                    title: res.data.message || "解读失败",
+                    icon: "none",
+                  });
+                }
+              },
+              fail: (error) => {
+                isLoading.value = false;
+                uni.showToast({
+                  title: "服务器错误",
+                  icon: "none",
+                });
+                console.error("小程序端 - 塔罗牌解读错误:", error);
+              },
+            });
+            // #endif
+          },
+        });
+      } else {
+        // 同步获取成功（仅小程序端）
+        const userId = userInfo && userInfo.id ? String(userInfo.id) : "anonymous";
+        console.log("获取到的 userId:", userId);
+
+        const requestData = {
           tarotCard: tarotCards,
           questionType: "general",
-          userQuestion: userInput.value,
-        },
-        header: {
-          "Content-Type": "application/json",
-        },
-        success: (res: any) => {
-          isLoading.value = false;
-          console.log("塔罗牌解析响应:", res);
-          if (res.data.success) {
-            // 跳转到 message 页面，并传递三张牌、用户提问和解析结果
-            uni.navigateTo({
-              url: `/pages/message/message?pastCard=${encodeURIComponent(
-                JSON.stringify(pastCard.value)
-              )}&presentCard=${encodeURIComponent(
-                JSON.stringify(presentCard.value)
-              )}&futureCard=${encodeURIComponent(
-                JSON.stringify(futureCard.value)
-              )}&userQuestion=${encodeURIComponent(userInput.value)}&reading=${encodeURIComponent(
-                res.data.reading
-              )}`,
-            });
+          userQuestion: trimmedInput,
+          userId: userId,
+        };
 
+        console.log("发送请求数据:", JSON.stringify(requestData));
+
+        // #ifdef MP-WEIXIN
+        uni.request({
+          url: "http://localhost:3000/api/tarot/reading",
+          method: "POST",
+          data: requestData,
+          header: {
+            "Content-Type": "application/json",
+          },
+          success: (res: any) => {
+            isLoading.value = false;
+            console.log("小程序端 - 塔罗牌解析响应:", res);
+            if (res.data.success) {
+              uni.navigateTo({
+                url: `/pages/message/message?pastCard=${encodeURIComponent(
+                  JSON.stringify(pastCard.value)
+                )}&presentCard=${encodeURIComponent(
+                  JSON.stringify(presentCard.value)
+                )}&futureCard=${encodeURIComponent(
+                  JSON.stringify(futureCard.value)
+                )}&userQuestion=${encodeURIComponent(trimmedInput)}&reading=${encodeURIComponent(
+                  res.data.reading
+                )}`,
+              });
+              uni.showToast({
+              
+                icon: "success",
+              });
+              userInput.value = "";
+              charCount.value = 0;
+            } else {
+              uni.showToast({
+                title: res.data.message || "解读失败",
+                icon: "none",
+              });
+            }
+          },
+          fail: (error) => {
+            isLoading.value = false;
             uni.showToast({
-              title: "提交成功",
-              icon: "success",
-            });
-            userInput.value = "";
-            charCount.value = 0;
-          } else {
-            uni.showToast({
-              title: res.data.message || "解读失败",
+              title: "服务器错误",
               icon: "none",
             });
-          }
-        },
-        fail: (error) => {
-          isLoading.value = false;
-          uni.showToast({
-            title: "服务器错误",
-            icon: "none",
-          });
-          console.error("塔罗牌解读错误:", error);
-        },
-      });
+            console.error("小程序端 - 塔罗牌解读错误:", error);
+          },
+        });
+        // #endif
+      }
     };
 
     return {
