@@ -1,0 +1,343 @@
+{
+	// 组件自动导入
+	"easycom": {
+		"autoscan": true,
+		"custom": {
+			// uni-ui 规则如下配置  // [!code ++]
+			"^uni-(.*)": "@dcloudio/uni-ui/lib/uni-$1/uni-$1.vue" // [!code ++]
+		}
+	},
+	"pages": [ //pages数组中第一项表示应用启动页，参考：https://uniapp.dcloud.io/collocation/pages
+		{
+			"path": "pages/index/index",
+			"style": {
+				"navigationBarTitleText": "首页"
+			}
+		},
+		{
+			"path": "pages/login/login",
+			"style": {
+				"navigationBarTitleText": "登录"
+			}
+		},
+		{
+			"path": "pages/my/my",
+			"style": {
+				"navigationBarTitleText": "我的"
+			}
+		},
+		{
+			"path": "pages/count/count",
+			"style": {
+				"navigationBarTitleText": "算一算"
+			}
+		},
+		{
+			"path": "pages/tarot-result/tarot-result",
+			"style": {
+				"navigationBarTitleText": "塔罗解答"
+			}
+		},
+		{
+			"path": "pages/star/star",
+			"style": {
+				"navigationBarTitleText": "星盘"
+			}
+		},
+		{
+			"path": "pages/star/zxx-detail",
+			"style": {
+				"navigationBarTitleText": "塔罗详情"
+			}
+		},
+		{
+			"path": "pages/star/zx-addactive",
+			"style": {
+				"navigationBarTitleText": "新增活动",
+				"navigationStyle": "default"
+			}
+		},
+		{
+			"path": "pages/star/zxh-detail",
+			"style": {
+				"navigationBarTitleText": "文章详情"
+			}
+		},
+		{
+			"path": "pages/index/IndexPage/LocalArchives",
+			"style": {
+				"navigationBarTitleText": "本地档案"
+			}
+		},
+		{
+			"path": "pages/index/IndexPage/UserAdd",
+			"style": {
+				"navigationBarTitleText": "档案编辑"
+			}
+		},
+		{
+			"path": "pages/index/IndexPage/LookMore",
+			"style": {
+				"navigationBarTitleText": "查看更多"
+			}
+		},
+		{
+			"path": "pages/index/IndexPage/HeartTest",
+			"style": {
+				"navigationBarTitleText": "性格测试"
+			}
+		},
+		{
+			"path": "pages/index/IndexPage/AnswerBook",
+			"style": {
+				"navigationBarTitleText": "答案之书"
+			}
+		},
+		{
+			"path": "pages/index/IndexPage/Bazi",
+			"style": {
+				"navigationBarTitleText": "生辰八字"
+			}
+		},
+		{
+			"path": "pages/index/IndexPage/Tree",
+			"style": {
+				"navigationBarTitleText": "树洞"
+			}
+		},
+		{
+			"path": "pages/index/IndexPage/TreeHistory",
+			"style": {
+				"navigationBarTitleText": "我的倾诉"
+			}
+		},
+		{
+			"path": "pages/index/IndexPage/dollas",
+			"style": {
+				"navigationBarTitleText": "解忧娃娃"
+			}
+		},
+		{
+			"path": "pages/index/IndexPage/Memory",
+			"style": {
+				"navigationBarTitleText": "我的回忆"
+			}
+		},
+		{
+			"path": "pages/index/IndexPage/meditation",
+			"style": {
+				"navigationBarTitleText": "冥想"
+			}
+		},
+		{
+			"path": "pages/index/IndexPage/muyu",
+			"style": {
+				"navigationBarTitleText": "木鱼"
+			}
+		},
+		{
+			"path": "pages/recharge/recharge",
+			"style": {
+				"navigationBarTitleText": "星币充值",
+				"navigationBarBackgroundColor": "#ffffff",
+				"navigationBarTextStyle": "black"
+			}
+		},
+		{
+			"path": "pages/profile/index",
+			"style": {
+				"navigationBarTitleText": "账号资料",
+				"navigationBarBackgroundColor": "#ffffff",
+				"navigationBarTextStyle": "black"
+			}
+		},
+		{
+			"path": "pages/my/component/question",
+			"style": {
+				"navigationBarTitleText": "问题反馈",
+				"navigationBarBackgroundColor": "#ffffff",
+				"navigationBarTextStyle": "black"
+			}
+		},
+		{
+			"path": "pages/my/component/video",
+			"style": {
+				"navigationStyle": "custom",
+				"navigationBarTextStyle": "white",
+				"app-plus": {
+					"titleNView": false,
+					"bounce": "none"
+				}
+			}
+		},
+		{
+			"path": "pages/my/component/coupon",
+			"style": {
+				"navigationBarTitleText": "我的卡券",
+				"navigationBarBackgroundColor": "#ffffff",
+				"navigationBarTextStyle": "black"
+			}
+		},
+		{
+			"path": "pages/my/component/order",
+			"style": {
+				"navigationBarTitleText": "订单列表",
+				"navigationBarBackgroundColor": "#ffffff",
+				"navigationBarTextStyle": "black"
+			}
+		},
+		{
+			"path": "pages/my/component/about",
+			"style": {
+			  "navigationBarTitleText": "关于",
+			  "navigationBarBackgroundColor": "#ffffff",
+				"navigationBarTextStyle": "black"
+			}
+		  },
+		  {
+			"path": "pages/my/component/setting",
+			"style": {
+			  "navigationBarTitleText": "设置",
+			   "navigationBarBackgroundColor": "#ffffff",
+				"navigationBarTextStyle": "black"
+			}
+		  },
+		  {
+			"path": "pages/my/component/password",
+			"style": {
+			  "navigationBarTitleText": "设置密码",
+			   "navigationBarBackgroundColor": "#ffffff",
+				"navigationBarTextStyle": "black"
+			}
+		  },
+
+		{
+			"path": "pages/my/component/user",
+			"style": {
+			  "navigationBarTitleText": "用户服务协议",
+			  "navigationBarBackgroundColor": "#ffffff",
+			  "navigationBarTextStyle": "black"
+			}
+		  },
+		  {
+			"path": "pages/my/component/Policy",
+			"style": {
+			  "navigationBarTitleText": "隐私政策",
+			  "navigationBarBackgroundColor": "#ffffff",
+			  "navigationBarTextStyle": "black"
+			}
+		  },
+		  {
+			"path": "pages/my/component/instruction",
+			"style": {
+			  "navigationBarTitleText": "说明",
+			  "navigationBarBackgroundColor": "#ffffff",
+			  "navigationBarTextStyle": "black"
+			}
+		  },
+		  {
+			"path": "pages/my/component/aiai",
+			"style": {
+			  "navigationBarTitleText": "AI解读记录",
+			  "navigationBarBackgroundColor": "#ffffff",
+			  "navigationBarTextStyle": "black"
+			}
+		  },
+		  {
+			"path": "pages/my/component/plan",
+			"style": {
+			  "navigationBarTitleText": "说明",
+			  "navigationBarBackgroundColor": "#ffffff",
+			  "navigationBarTextStyle": "black"
+			}
+		  },
+		  {
+			"path": "pages/my/component/phone",
+			"style": {
+			  "navigationBarTitleText": "绑定手机",
+			  "navigationBarBackgroundColor": "#ffffff",
+			  "navigationBarTextStyle": "black"
+			}
+		  },
+		  {
+			"path": "pages/my/component/actives",
+			"style": {
+			  "navigationBarTitleText": "我的活动",
+			  "navigationBarBackgroundColor": "#ffffff",
+			  "navigationBarTextStyle": "black"
+			}
+		  },
+		  {
+			"path": "pages/my/component/server",
+			"style": {
+			  "navigationBarTitleText": "人工客服",
+			  "navigationBarBackgroundColor": "#ffffff",
+			  "navigationBarTextStyle": "black"
+			}
+		  },
+		  {
+			"path": "pages/my/component/speak",
+			"style": {
+			  "navigationBarTitleText": "登录问题说明",
+			  "navigationBarBackgroundColor": "#ffffff",
+			  "navigationBarTextStyle": "black"
+			}
+		  },
+		  {
+			"path": "pages/my/component/individuation",
+			"style": {
+			  "navigationBarTitleText": "个性化设置",
+			  "navigationBarBackgroundColor": "#ffffff",
+			  "navigationBarTextStyle": "black"
+			}
+		  },
+		  {
+			"path": "pages/my/header",
+			"style": {
+			  "navigationStyle": "custom"
+			}
+		  },
+		  {
+			"path": "pages/my/register",
+			"style": {
+			  "navigationStyle": "custom"
+			}
+		  }
+		  
+	],
+	"globalStyle": {              
+		"navigationBarTextStyle": "black",
+		"navigationBarTitleText": "uni-app",
+		"navigationBarBackgroundColor": "#F8F8F8",
+		"backgroundColor": "#F8F8F8"
+	},
+	"tabBar": {
+		"list": [
+			{
+				"pagePath": "pages/index/index",
+				"text": "首页",
+				"iconPath":"static/icon/index.png",
+				"selectedIconPath":"static/icon/index-active.png"
+			},
+			{
+				"pagePath": "pages/count/count",
+				"text": "算一算",
+				"iconPath":"static/icon/count.png",
+				"selectedIconPath":"static/icon/count-active.png"
+			},
+			{
+				"pagePath": "pages/star/star",
+				"text": "星盘",
+				"iconPath":"static/icon/star.png",
+				"selectedIconPath":"static/icon/star-active.png"
+			},
+			{
+				"pagePath": "pages/my/my",
+				"text": "我的",
+				"iconPath":"static/icon/my.png",
+				"selectedIconPath":"static/icon/my-active.png"
+			}
+		]
+	}
+	
+}
