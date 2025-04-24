@@ -28,25 +28,29 @@
         <input type="text" :value="formData.startTime" disabled class="input" />
       </view>
 
+
       <view class="form-item">
         <text class="label">结束时间</text>
-        <picker mode="date" :value="formData.endTime" @change="onEndTimeChange" class="input">
+        <picker 
+          mode="date" 
+          :value="formData.endTime" 
+          :start="minEndDate"
+          @change="onEndTimeChange" 
+          class="input"
+        >
           <view>{{ formData.endTime || '请选择结束时间' }}</view>
         </picker>
       </view>
 
       <view class="form-item">
-        <text class="label">参与人数</text>
-        <input type="number" v-model="formData.person" placeholder="请输入最大参与人数" class="input" />
-      </view>
-
-      <view class="form-item">
-        <text class="label">活动宣传图</text>
-        <view class="image-upload" @tap="chooseImage">
-          <image v-if="formData.image" :src="formData.image" mode="aspectFit" class="preview-image" />
-          <view v-else class="upload-placeholder">点击上传图片</view>
-        </view>
-      </view>
+  <text class="label">活动宣传图</text>
+  <view class="image-upload" @tap="chooseImage">
+    <image v-if="formData.image" :src="formData.image" mode="aspectFit" class="preview-image" />
+    <view v-else class="upload-placeholder">
+      <text>点击上传图片</text>
+    </view>
+  </view>
+</view>
 
       <view class="button-group">
         <button class="submit-btn" @click="handleSubmit">提交</button>
@@ -58,32 +62,61 @@
 
 <script setup>
 import { ref } from 'vue'
+const minEndDate = new Date().toISOString().split('T')[0]; // 获取当前日期作为最小日期
 
 const formData = ref({
   title: '',
   context: '',
   local: '',
-  person: '',
   startTime: new Date().toLocaleDateString(), // 自动获取当前时间
   endTime: '',
   image: ''
 })
 
-// 选择结束时间
+// 修改结束时间选择处理
 const onEndTimeChange = (e) => {
+  const selectedDate = new Date(e.detail.value);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0); // 设置时间为当天开始
+
+  if (selectedDate < today) {
+    uni.showToast({
+      title: '结束时间不能早于今天',
+      icon: 'none'
+    });
+    return;
+  }
   formData.value.endTime = e.detail.value;
 }
 
-// 选择图片
+// 修改 chooseImage 函数
 const chooseImage = () => {
   uni.chooseImage({
     count: 1,
+    sizeType: ['compressed'],
+    sourceType: ['album', 'camera'],
     success: (res) => {
-      formData.value.image = res.tempFilePaths[0];
+      // 设置预览图片
+      formData.value.image = res.tempFilePaths[0]
+      // 保存文件路径用于上传
+      formData.value.imageFile = res.tempFilePaths[0]
+      
+      uni.showToast({
+        title: '图片选择成功',
+        icon: 'success'
+      })
+    },
+    fail: (error) => {
+      console.error('选择图片失败:', error)
+      uni.showToast({
+        title: '选择图片失败',
+        icon: 'none'
+      })
     }
-  });
+  })
 }
 
+// 修改 handleSubmit 函数中的上传部分
 const handleSubmit = async () => {
   // 表单验证
   if (!formData.value.title.trim()) {
@@ -98,58 +131,73 @@ const handleSubmit = async () => {
     uni.showToast({ title: '请输入活动地点', icon: 'none' });
     return;
   }
-  if (!formData.value.person) {
-    uni.showToast({ title: '请输入参与人数', icon: 'none' });
-    return;
-  }
   if (!formData.value.endTime) {
     uni.showToast({ title: '请选择结束时间', icon: 'none' });
     return;
   }
+  
   if (!formData.value.image) {
     uni.showToast({ title: '请上传活动宣传图', icon: 'none' });
     return;
   }
-
   try {
-    const response = await uni.request({
-      url: 'http://localhost:3000/zactive/add',
-      method: 'POST',
-      data: formData.value,
-      header: {
-        'content-type': 'application/json'
-      }
-    });
+    // 将日期格式化为 YYYY-MM-DD 格式
+    const startDate = new Date(formData.value.startTime).toISOString().split('T')[0];
+    const endDate = formData.value.endTime;
 
-    if (response.data.code === 200) {
+    // 显示上传中提示
+    uni.showLoading({
+    title: '正在提交...'
+  })
+
+
+  const uploadResult = await new Promise((resolve, reject) => {
+    uni.uploadFile({
+      url: 'http://localhost:3000/zactive/add',
+      filePath: formData.value.imageFile,
+      name: 'image',
+      formData: {
+        title: formData.value.title,
+        context: formData.value.context,
+        local: formData.value.local,
+        startTime: startDate,
+        endTime: endDate
+      },
+      success: (res) => resolve(res),
+      fail: (err) => reject(err)
+    })
+  })
+
+    // 隐藏加载提示
+    uni.hideLoading()
+
+    const result = JSON.parse(uploadResult.data)
+
+    if (result.code === 200) {
       uni.showToast({
         title: '添加成功',
         icon: 'success',
         duration: 2000,
         success: () => {
           setTimeout(() => {
-            uni.navigateBack();
-          }, 1500);
+            uni.navigateBack()
+          }, 1500)
         }
-      });
+      })
     } else {
       uni.showToast({
-        title: response.data.msg || '添加失败',
+        title: result.msg || '添加失败',
         icon: 'none'
-      });
+      })
     }
   } catch (error) {
-    console.error('请求失败：', error);
-    uni.showToast({
+    console.error('请求失败：', error)
+    Taro.hideLoading()
+    Taro.showToast({
       title: '网络请求失败',
       icon: 'none'
-    });
+    })
   }
-};
-
-
-const handleCancel = () => {
-  uni.navigateBack()
 }
 </script>
 
@@ -243,11 +291,14 @@ const handleCancel = () => {
   margin-top: 10upx;
   transition: all 0.3s ease;
   cursor: pointer;
+  position: relative; /* 添加定位 */
+  overflow: hidden; /* 防止内容溢出 */
 }
 
 .image-upload:active {
   background-color: #fff5f6;
   border-color: #ff69b4;
+  opacity: 0.8; /* 添加点击效果 */
 }
 
 .upload-placeholder {
@@ -256,6 +307,7 @@ const handleCancel = () => {
   display: flex;
   flex-direction: column;
   align-items: center;
+  gap: 10upx; /* 添加间距 */
 }
 
 .preview-image {
@@ -263,6 +315,7 @@ const handleCancel = () => {
   height: 100%;
   object-fit: cover;
   border-radius: 12upx;
+  pointer-events: none; /* 防止图片干扰点击事件 */
 }
 
 .button-group {

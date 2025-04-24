@@ -91,8 +91,7 @@
     </view>
     
     <view class="action-buttons">
-      <button class="action-button shuffle-button" @tap="shuffleCards">洗牌</button>
-      <button class="action-button reset-button" @tap="resetCards">重置</button>
+      <button class="action-button shuffle-button" @tap="shuffleCards">重新洗牌</button>
     </view>
     
     <view class="reading-result" v-if="isReadingComplete">
@@ -150,18 +149,13 @@ const selectCard = (position) => {
 // 洗牌
 const shuffleCards = () => {
   // 重置已选择的卡牌
-  selectedCards.value = [null, null, null, null, null, null]
+  selectedCards.value = [null, null, null]
   
   // 打乱牌组顺序
   for (let i = tarotDeck.value.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1))
     ;[tarotDeck.value[i], tarotDeck.value[j]] = [tarotDeck.value[j], tarotDeck.value[i]]
   }
-}
-
-// 重置
-const resetCards = () => {
-  selectedCards.value = [null, null, null, null, null, null]
 }
 
 // 生成解读结果

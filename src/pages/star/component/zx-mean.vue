@@ -7,16 +7,18 @@
         22张大阿尔卡那是塔罗牌的核心，均有其特定的含义所在。
         56张小阿尔卡那是对大阿尔卡那的诠释，依据西方的四元素学说分为四组--权杖(火)、圣杯(水)、宝剑(风)、星币(土)。</text>
     </view>
-    <view class="tab-container">
-      <view 
-        v-for="(item, index) in tabList" 
-        :key="index"
-        :class="['tab-item', { active: currentTab === index }]"
-        @tap="switchTab(index)"
-      >
-        {{ item.name }}
-      </view>
+    <scroll-view scroll-x class="tab-container" :show-scrollbar="false">
+  <view class="tab-wrapper">
+    <view 
+      v-for="(item, index) in tabList" 
+      :key="index"
+      :class="['tab-item', { active: currentTab === index }]"
+      @tap="switchTab(index)"
+    >
+      {{ item.name }}
     </view>
+  </view>
+</scroll-view>
 
     <view class="cards-container">
       <!-- 第一张卡牌单独一行 -->
@@ -300,10 +302,15 @@ const getCardAnalysis = (card: any) => {
 }
 
 .tab-container {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 20rpx;
+  width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
   margin-bottom: 30rpx;
+}
+.tab-wrapper {
+  display: inline-flex;
+  padding: 0 20rpx;
+  gap: 20rpx;
 }
 
 .tab-item {
@@ -312,6 +319,7 @@ const getCardAnalysis = (card: any) => {
   border-radius: 30rpx;
   font-size: 28rpx;
   color: #666;
+  flex-shrink: 0;
 }
 
 .tab-item.active {

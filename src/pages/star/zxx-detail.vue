@@ -1,5 +1,5 @@
 <template>
-    <div class="detail-container">
+    <div class="detail-container" :class="{'custom-font-loaded': fontLoaded}">
         <div class="detail-section">
             <h3 class="section-title">什么是塔罗牌</h3>
             <p class="section-content">塔罗牌（TAROT）共 78 张，包括 22 张大阿尔卡那牌和 56 张小阿尔卡那牌。大阿尔卡那牌又称将牌，牌面各有独特图案和意义，如愚人、魔术师、女祭司等，代表着不同人生际遇，是占卜分析的重点。小阿尔卡那牌也叫小牌，有 4 种花色，通常是权杖、星币、圣杯、宝剑，每种花色包含 10 张数字牌（Ace - 10）和 4 张宫廷牌（侍从、骑士、王后、国王），可解释具体状况、周遭环境、原因发展等，也可用于解释人物性格。</p>
@@ -19,9 +19,36 @@
 </template>
 
 <script setup>
+import { ref, onMounted } from 'vue'
+const fontLoaded = ref(false)
 const goBack = () => {
   uni.navigateBack()
 }
+onMounted(() => {
+  // 加载站酷快乐体
+  uni.loadFontFace({
+    family: 'ZhanKuKuaiLe',
+    source: 'url("src/static/fonts/ZhankuKuaiLe.ttf")',
+    desc: {
+      weight: '400',
+      style: 'normal',
+    },
+    global: true,
+    success: () => {
+      fontLoaded.value = true
+      console.log('站酷快乐体加载成功')
+    },
+    fail: (err) => {
+      console.error('字体加载失败，错误详情：', err)
+      // 添加错误处理，使用系统默认字体
+      fontLoaded.value = false
+      // 提供更详细的错误信息以便调试
+      if (err.status === 'error') {
+        console.warn('请检查字体文件是否存在于正确路径：/static/fonts/ZhankuKuaiLe.ttf')
+      }
+    }
+  })
+})
 </script>
 
 <style scoped>
@@ -30,6 +57,36 @@ const goBack = () => {
   background-color: #fff;
   min-height: 100vh;
   box-sizing: border-box;
+  /* 系统字体栈 */
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  /* 字体加载过渡效果 */
+  transition: font-family 0.3s ease;
+}
+
+/* 字体加载后的过渡效果 */
+.section-content {
+  transition: all 0.3s ease;
+}
+
+/* 修改字体加载时的动画样式 */
+.detail-container:not(.custom-font-loaded) .section-content {
+  animation: pulse 1.5s ease-in-out infinite;
+}
+/* 自定义字体加载后的样式 */
+.detail-container.custom-font-loaded {
+  font-family: 'ZhanKuKuaiLe', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+  100% {
+    opacity: 1;
+  }
 }
 
 .detail-section {

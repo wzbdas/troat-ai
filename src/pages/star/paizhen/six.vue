@@ -119,9 +119,8 @@
     </view>
     
     <view class="action-buttons">
-      <button class="action-button shuffle-button" @tap="shuffleCards">洗牌</button>
-      <button class="action-button reset-button" @tap="resetCards">重置</button>
-    </view>
+  <button class="action-button shuffle-button" @tap="handleReset">重新洗牌</button>
+</view>
     
     <view class="reading-result" v-if="isReadingComplete">
       <view class="result-title">六芒星解读</view>
@@ -176,7 +175,7 @@ const selectCard = (position) => {
 }
 
 // 洗牌
-const shuffleCards = () => {
+const handleReset = () => {
   // 重置已选择的卡牌
   selectedCards.value = [null, null, null, null, null, null]
   
@@ -185,11 +184,6 @@ const shuffleCards = () => {
     const j = Math.floor(Math.random() * (i + 1))
     ;[tarotDeck.value[i], tarotDeck.value[j]] = [tarotDeck.value[j], tarotDeck.value[i]]
   }
-}
-
-// 重置
-const resetCards = () => {
-  selectedCards.value = [null, null, null, null, null, null]
 }
 
 // 生成解读结果

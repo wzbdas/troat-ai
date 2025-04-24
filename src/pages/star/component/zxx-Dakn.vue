@@ -5,7 +5,8 @@
      :key="index"
      class="image-wrapper"
      :style="{
-       transform: `rotate(${index * (360 / images.length)}deg) translateY(-${circleRadius}px) rotate(${rotationAngle}deg)`
+       transform: `rotate(${index * (360 / images.length)}deg) 
+       translateY(-${circleRadius}px) rotate(${rotationAngle}deg)`
      }"
    >
      <image 
@@ -29,7 +30,6 @@
      <view class="modal-title">请选择抽取数量</view>
      <view class="modal-buttons">
        <button @tap="handleDrawCards(1)" class="modal-button">抽一张</button>
-       <!-- <button @tap="handleDrawCards(2)" class="modal-button">抽两张</button> -->
        <button @tap="handleDrawCards(3)" class="modal-button">抽三张</button>
      </view>
    </view>
@@ -47,10 +47,10 @@
          <text class="selected-card-title">{{card.title}}</text>
        </view>
      </view>
-     <view class="modal-actions">
+     <!-- <view class="modal-actions">
        <button @tap="handleSelfReading" class="modal-button self-reading">自助解牌</button>
        <button @tap="handleAIReading" class="modal-button ai-reading">AI解牌</button>
-     </view>
+     </view> -->
    </view>
  </view>
  </view>
@@ -197,7 +197,6 @@ const handleAIReading = () => {
 
 const handleImageError = (index) => {
  console.error(`图片加载失败: ${images[index]}`)
- // 可以在这里添加默认图片替换逻辑
 }
 
 onMounted(() => {

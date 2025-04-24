@@ -28,22 +28,24 @@
       </view>
       
       <view class="positions-setup" v-if="cardCount > 0">
-        <view class="position-input" v-for="(position, index) in positions" :key="index">
-          <text class="position-number">{{ index + 1 }}</text>
-          <input 
-            class="position-name-input" 
-            type="text" 
-            v-model="position.name" 
-            :placeholder="`牌位${index + 1}名称`"
-          />
-          <input 
-            class="position-meaning-input" 
-            type="text" 
-            v-model="position.meaning" 
-            :placeholder="`牌位${index + 1}含义`"
-          />
-        </view>
+    <view class="positions-container" :class="{ 'multi-cards': cardCount > 1 }">
+      <view class="position-input" v-for="(position, index) in positions" :key="index">
+        <text class="position-number">{{ index + 1 }}</text>
+        <input 
+          class="position-name-input" 
+          type="text" 
+          v-model="position.name" 
+          :placeholder="`牌位${index + 1}名称`"
+        />
+        <input 
+          class="position-meaning-input" 
+          type="text" 
+          v-model="position.meaning" 
+          :placeholder="`牌位${index + 1}含义`"
+        />
       </view>
+    </view>
+  </view>
       
       <button class="setup-button" @tap="completeSetup" :disabled="!isSetupValid">创建牌阵</button>
     </view>
@@ -105,6 +107,11 @@ const validateCardCount = () => {
   if (isNaN(count) || count < 1) {
     cardCount.value = 1
   } else if (count > 7) {
+    uni.showToast({
+      title: '您的输入有误，请输入1-7之间的数字',
+      icon: 'none',
+      duration: 2000
+    })
     cardCount.value = 7
   }
   
@@ -116,17 +123,20 @@ const validateCardCount = () => {
 const updatePositions = () => {
   const count = parseInt(cardCount.value)
   if (!isNaN(count)) {
-    // 保留现有的牌位设置
     const currentPositions = [...positions.value]
     positions.value = []
     
     for (let i = 0; i < count; i++) {
+      // 从牌组中随机选择一张牌
+      const randomIndex = Math.floor(Math.random() * tarotDeck.value.length)
+      const randomCard = tarotDeck.value[randomIndex]
+      
       if (currentPositions[i]) {
         positions.value.push(currentPositions[i])
       } else {
         positions.value.push({
           name: `牌位${i + 1}`,
-          meaning: `牌位${i + 1}的含义`
+          meaning: randomCard.meaning // 使用随机牌的含义
         })
       }
     }
@@ -308,18 +318,42 @@ const generateReading = () => {
 
 .positions-setup {
   margin-top: 30rpx;
+  width: 100%;
+}
+
+.positions-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20rpx;
+  width: 100%;
+}
+
+.positions-container.multi-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300rpx, 1fr));
+  justify-content: center;
+  gap: 30rpx;
+  padding: 20rpx;
+  max-width: 900rpx;
+  margin: 0 auto;
 }
 
 .position-input {
   display: flex;
   align-items: center;
-  margin-bottom: 20rpx;
-  gap: 10rpx;
+  gap: 15rpx;
+  width: 100%;
+  max-width: 600rpx;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 20rpx;
+  border-radius: 12rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
 }
 
 .position-number {
-  width: 40rpx;
-  height: 40rpx;
+  width: 44rpx;
+  height: 44rpx;
   background-color: #ff4c8d;
   color: white;
   border-radius: 50%;
@@ -328,16 +362,23 @@ const generateReading = () => {
   align-items: center;
   font-size: 24rpx;
   font-weight: bold;
+  flex-shrink: 0;
 }
 
 .position-name-input, .position-meaning-input {
   flex: 1;
   height: 70rpx;
-  border: 2rpx solid #ddd;
+  border: 2rpx solid #ffcce0;
   border-radius: 8rpx;
   padding: 0 20rpx;
   font-size: 24rpx;
   background-color: #fff;
+  transition: all 0.3s ease;
+}
+
+.position-name-input:focus, .position-meaning-input:focus {
+  border-color: #ff4c8d;
+  box-shadow: 0 0 6rpx rgba(255, 76, 141, 0.2);
 }
 
 .setup-button {
@@ -386,25 +427,34 @@ const generateReading = () => {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 20rpx;
-  margin: 30rpx 0;
+  align-items: center;
+  gap: 40rpx;
+  margin: 30rpx auto;
+  padding: 40rpx;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.05), rgba(0,0,0,0.1));
+  border-radius: 20rpx;
+  max-width: 1200rpx;
 }
 
 .card-position {
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-bottom: 30rpx;
+  margin: 0 20rpx;
+  flex: 0 1 auto;
+  min-width: 220rpx;
+  max-width: 280rpx;
 }
 
 .card {
-  width: 200rpx;
-  height: 340rpx;
+  width: 240rpx;
+  height: 400rpx;
   perspective: 1000rpx;
   margin-bottom: 20rpx;
   cursor: pointer;
   transition: transform 0.6s;
   transform-style: preserve-3d;
+  position: relative;
 }
 
 .card-selected {
@@ -443,17 +493,25 @@ const generateReading = () => {
 }
 
 .position-label {
-  font-size: 28rpx;
-  font-weight: bold;
-  color: #333;
-  margin: 16rpx 0 8rpx;
+  width: 100%;
   text-align: center;
+  margin-top: 20rpx;
+  font-size: 28rpx;
+  color: #333;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .position-meaning {
+  width: 100%;
+  text-align: center;
   font-size: 24rpx;
   color: #666;
-  text-align: center;
+  margin-top: 10rpx;
   padding: 0 10rpx;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 </style>

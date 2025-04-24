@@ -27,7 +27,9 @@
     <!-- #endif -->
  
     <!-- #ifdef H5 -->
+
     <view class="h5-content">
+      <view class="sticky-header">
       <view class="h5-tab-container">
         <view class="h5-tab-wrapper">
           <view 
@@ -41,10 +43,13 @@
         </view>
       </view>
     </view>
-    <view class="h5-component-container">
-        <Taro v-if="currentH5Tab === 0" />
-        <Spread v-else-if="currentH5Tab === 1" />
-        <Mean v-else-if="currentH5Tab === 2" />
+    </view>
+    <view class="h5-main-content">
+        <view class="h5-component-container">
+          <Taro v-if="currentH5Tab === 0" />
+          <Spread v-else-if="currentH5Tab === 1" />
+          <Mean v-else-if="currentH5Tab === 2" />
+        </view>
       </view>
     <!-- #endif -->
   </view>
@@ -70,7 +75,7 @@ const tabItems = [
   '14张星币牌'
 ]
 const tabItems1 = [
-  '活动',
+  '塔圈',
   '牌阵',
   '牌意'
 ]
@@ -158,17 +163,26 @@ const handleH5TabClick = (index) => {
   width: 100%;
   max-width: 1800rpx;
   margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  /* min-height: 100vh; */
+}
+
+.sticky-header {
+  position: sticfky;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 100;
+  background: #fff;
 }
 
 .h5-tab-container {
   width: 100%;
   display: flex;
   justify-content: center;
-  padding: 20rpx;
   background: #fff;
   box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.05);
-  position: sticky;
-  top: 0;
   z-index: 10;
 }
 
@@ -207,10 +221,17 @@ const handleH5TabClick = (index) => {
   box-shadow: 0 8rpx 20rpx rgba(255, 76, 141, 0.2);
 }
 
-.h5-component-container {
+.h5-main-content {
+  flex: 1;
   width: 100%;
-  min-height: calc(100vh - 200rpx);
+  overflow-y: auto;
+}
+
+.h5-component-container {
+  width: auto;
   background-color: #f5f9fc;
   padding: 20rpx;
+  border-radius: 12rpx; /* 添加容器圆角 */
+  margin-top: 10rpx; /* 添加顶部间距 */
 }
 </style>

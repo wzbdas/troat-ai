@@ -65,6 +65,42 @@
 			}
 		},
 		{
+			"path": "pages/star/activexq",
+			"style": {
+				"navigationBarTitleText": "活动详情"
+			}
+		},
+		{
+			"path": "pages/star/active",
+			"style": {
+				"navigationBarTitleText": "参与更多"
+			}
+		},
+		{
+			"path": "pages/star/zx-dashi",
+			"style": {
+				"navigationBarTitleText": "大师"
+			}
+		},
+		{
+			"path": "pages/star/zx-jiemeng",
+			"style": {
+				"navigationBarTitleText": "解梦"
+			}
+		},
+		{
+			"path": "pages/star/component/dream-detail",
+			"style": {
+			  "navigationBarTitleText": "梦境解析"
+			}
+		  },
+		  {
+			"path": "pages/star/component/jiemengxq",
+			"style": {
+			  "navigationBarTitleText": "梦境AI解析"
+			}
+		  },
+		{
 			"path": "pages/index/IndexPage/LocalArchives",
 			"style": {
 				"navigationBarTitleText": "本地档案"

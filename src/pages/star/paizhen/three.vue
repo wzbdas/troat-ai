@@ -21,8 +21,7 @@
     </view>
     
     <view class="action-buttons">
-      <button class="action-button shuffle-button" @tap="shuffleCards">洗牌</button>
-      <button class="action-button reset-button" @tap="resetCards">重置</button>
+      <button class="action-button shuffle-button" @tap="shuffleCards">重新洗牌</button>
     </view>
     
     <view class="reading-result" v-if="isReadingComplete">
@@ -92,11 +91,6 @@ const shuffleCards = () => {
   }
 }
 
-// 重置
-const resetCards = () => {
-  selectedCards.value = [null, null, null]
-}
-
 // 生成解读结果
 const generateReading = () => {
   if (!isReadingComplete.value) return ''
@@ -109,8 +103,11 @@ const generateReading = () => {
 </script>
 
 <style scoped>
-.three-spread {
-  padding: 20rpx;
+.component-container {
+  width: 100%;
+  max-width: 100%; /* 限制内容宽度 */
+  overflow-x: hidden; /* 禁止水平溢出 */
+  box-sizing: border-box;
 }
 
 .spread-title {
@@ -130,16 +127,19 @@ const generateReading = () => {
 }
 
 .cards-container {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0 20rpx;
   display: flex;
-  justify-content: space-around;
-  margin: 50rpx 0;
+  flex-wrap: wrap; /* 允许在小屏幕上换行 */
+  justify-content: center;
+  gap: 20rpx;
 }
 
 .card-position {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 30%;
+  flex: 0 1 auto; /* 允许卡片缩小但不放大 */
+  min-width: 160rpx; /* 设置最小宽度 */
+  max-width: 30%; /* 设置最大宽度 */
 }
 
 .card {
