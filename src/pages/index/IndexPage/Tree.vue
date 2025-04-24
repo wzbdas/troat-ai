@@ -48,7 +48,8 @@ const handleSubmit = () => {
   }
   // TODO: 实现提交逻辑
   addQingsu({
-    content: content.value
+    content: content.value,
+    userId : JSON.parse(uni.getStorageSync('userInfo')).id
   }).then(res => {
     if(res.data.code === 200) {
         uni.showToast({

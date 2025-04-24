@@ -1,14 +1,17 @@
 // 获取用户列表接口
 // #ifdef MP-WEIXIN
-export const getUserList = () => {
+export const getUserList = (data:any) => {
+  console.log(data,1111);
+  
   return new Promise((resolve, reject) => {
     uni.request({
-     url: 'http://localhost:3000/mbi/list', // 确保后端服务在此端口运行
+     url: `http://localhost:3000/mbi/list?id=data`, // 确保后端服务在此端口运行
      method: 'GET',
      header: {
        'content-type': 'application/json',
        'Access-Control-Allow-Origin': '*'  // 添加跨域头
      },
+     data: data,
      timeout: 5000,  // 添加超时设置
      success: (res) => {
        resolve(res);
@@ -49,6 +52,56 @@ export const addUser = (data: any) => {
     })
     })
     };
+//回显用户接口
+export const getUser = (data: any) => {
+  return new Promise((resolve, reject) => {
+    uni.request({
+       url: `http://localhost:3000/mbi/getUser?id=data`, // 确保后端服务在此端口运行
+       method: 'GET' , 
+       header: {
+         'content-type': 'application/json',
+         'Access-Control-Allow-Origin': '*'  // 添加跨域头 
+       },
+       data: data,
+       timeout: 5000,  // 添加超时设置
+       success: (res) => {
+         resolve(res);
+       },
+       fail: (err) => {
+         console.error('请求失败：', err);  // 添加错误日志
+         reject(err);
+       },
+       complete: () => {
+         console.log('请求完成');  // 添加完成日志
+       }
+    }) 
+  })  
+}
+//修改用户接口
+export const updateUser = (data: any) => {
+  return new Promise((resolve, reject) => {
+    uni.request({
+       url: 'http://localhost:3000/mbi/updateUser', // 确保后端服务在此端口运行
+       method: 'POST', 
+       header: {
+         'content-type': 'application/json',
+         'Access-Control-Allow-Origin': '*'  // 添加跨域头 
+       },
+       data: data,
+       timeout: 5000,  // 添加超时设置
+       success: (res) => {
+         resolve(res);
+       },
+       fail: (err) => {
+         console.error('请求失败：', err);  // 添加错误日志
+         reject(err);
+       },
+       complete: () => {
+         console.log('请求完成');  // 添加完成日志
+       }
+    }) 
+  }) 
+}
 //删除用户接口
 export const deleteUser = (data: any) => {
   return new Promise((resolve, reject) => {
@@ -75,15 +128,16 @@ export const deleteUser = (data: any) => {
   })
 };
 //获取倾诉列表接口
-export const getQingsuList = () => {
+export const getQingsuList = (data:any) => {
   return new Promise((resolve, reject) => {
     uni.request({
-     url: 'http://localhost:3000/mbi/qingsu', // 确保后端服务在此端口运行
+     url: `http://localhost:3000/mbi/qingsu?id=data`, // 确保后端服务在此端口运行
      method: 'GET',
      header: {
        'content-type': 'application/json',
        'Access-Control-Allow-Origin': '*'  // 添加跨域头
      },
+     data:data,
      timeout: 5000,  // 添加超时设置
      success: (res) => {
        resolve(res);
@@ -149,15 +203,16 @@ export const deleteQingsu = (data: any) => {
   }) 
 }
 //获取回忆列表
-export const getMemoryList = () => {
+export const getMemoryList = (data:any) => {
   return new Promise((resolve, reject) => {
     uni.request({
-     url: 'http://localhost:3000/mbi/memory', // 确保后端服务在此端口运行
+     url: `http://localhost:3000/mbi/memory?id=data`, // 确保后端服务在此端口运行
      method: 'GET',
      header: {
        'content-type': 'application/json',
        'Access-Control-Allow-Origin': '*'  // 添加跨域头
      },
+     data:data,
      timeout: 5000,  // 添加超时设置
      success: (res) => {
        resolve(res);
@@ -304,7 +359,6 @@ export const updateAudioStatus = (data: any) => {
         'Access-Control-Allow-Origin': '*'  // 添加跨域头
       },
       data: data,
-      timeout: 5000,  // 添加超时设置
       success: (res) => {
         resolve(res);
       },
@@ -346,8 +400,8 @@ export const getBazi = (data: any) => {
 import http from '../utils/http'
 // #ifdef H5
 // 获取用户列表接口
-export const getUserList = () => {
-  return http.get('/mbi/list',null,{
+export const getUserList = (data:any) => {
+  return http.get('/mbi/list',data,{
     headers: {
       'Content-Type': 'application/json',
     }
@@ -361,6 +415,22 @@ export const addUser = (data: any) => {
     }
    })
 }
+//回显用户接口
+export const getUser = (data: any) => {
+  return http.get('/mbi/getUser', data, {
+    headers: {
+      'Content-Type': 'application/json',
+    }
+ })
+}
+//修改用户接口
+export const updateUser = (data: any) => {
+  return http.post('/mbi/updateUser', data, {
+    headers: {
+      'Content-Type': 'application/json',
+    }
+  })
+}
 //删除用户接口
 export const deleteUser = (data: any) => {
   return http.post('/mbi/delUser', data, {
@@ -370,8 +440,8 @@ export const deleteUser = (data: any) => {
   })
 }
 // 获取倾诉列表接口
-export const getQingsuList = () => {
-  return http.get('/mbi/qingsu', null, {
+export const getQingsuList = (data:any) => {
+  return http.get('/mbi/qingsu', data, {
     headers: {
       'Content-Type': 'application/json',
     }
@@ -394,8 +464,8 @@ export const deleteQingsu = (data: any) => {
   })
 }
 //获取回忆列表
-export const getMemoryList = () => {
-  return http.get('/mbi/memory', null, {
+export const getMemoryList = (data:any) => {
+  return http.get('/mbi/memory', data, {
     headers: {
       'Content-Type': 'application/json',
     }
@@ -458,96 +528,6 @@ export const getBazi = (data: any) => {
   })
 }
 //#endif
-// // 获取用户列表接口
-// export const getList = () => {
-//   return new Promise((resolve, reject) => {
-//     uni.request({
-//       url: 'http://localhost:3000/users/register', // 确保后端服务在此端口运行
-//       method: 'GET',
-//       header: {
-//         'content-type': 'application/json',
-//         'Access-Control-Allow-Origin': '*'  // 添加跨域头
-//       },
-//       timeout: 5000,  // 添加超时设置
-//       success: (res) => {
-//         resolve(res);
-//       },
-//       fail: (err) => {
-//         console.error('请求失败：', err);  // 添加错误日志
-//         reject(err);
-//       },
-//       complete: () => {
-//         console.log('请求完成');  // 添加完成日志
-//       }
-//     });
-//   });
-// }
-
-
-
-
-
-// // 用户注册接口
-// export const registerUser = (data: { phone: string; password: string }) => {
-//   // 参数校验
-//   if (!data.phone || !data.password) {
-//     return Promise.reject(new Error('手机号和密码不能为空'));
-//   }
-
-//   return new Promise((resolve, reject) => {
-//     uni.request({
-//       url: 'http://localhost:3000/users/add',
-//       method: 'POST',
-//       data: {
-//         phone: data.phone,
-//         password: data.password,
-//         // 添加其他必要字段
-//         name: data.phone, // 默认使用手机号作为用户名
-//         create_time: new Date().toISOString()
-//       },
-//       header: {
-//         'content-type': 'application/json'
-//       },
-//       success: (res: any) => {
-//         if (res.data.code === 0) {
-//           resolve(res.data);
-//         } else {
-//           reject(new Error(res.data.msg || '注册失败'));
-//         }
-//       },
-//       fail: (err) => {
-//         console.error('注册失败：', err);
-//         reject(new Error('网络请求失败'));
-//       }
-//     });
-//   });
-// };
-// 修改用户列表接口
-// export const UpdateList = (data: { id: number, surplus: number }) => {
-//   return new Promise((resolve, reject) => {
-//     uni.request({
-//       url: 'http://localhost:3000/users/update',
-//       method: 'POST',
-//       data: {
-//         id: data.id,
-//         surplus: data.surplus,
-//       },
-//       header: {
-//         'content-type': 'application/json',
-//         'Access-Control-Allow-Origin': '*'
-//       },
-//       timeout: 5000,
-//       success: (res) => {
-//         resolve(res);
-//       },
-//       fail: (err) => {
-//         console.error('请求失败：', err);
-//         reject(err);
-//       }
-//     });
-//   });
-// }
-
 
 // 获取活动
 export const getActive = () => {

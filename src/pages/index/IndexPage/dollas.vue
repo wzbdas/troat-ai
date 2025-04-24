@@ -148,7 +148,8 @@ const submitConfession = async () => {
     const res = await addMemory({
       memory_text: confessionText.value,
       doll_id: currentIndex.value + 1,
-      created_at: formattedDate
+      created_at: formattedDate,
+      userId : JSON.parse(uni.getStorageSync('userInfo')).id
     })
     
     if (res.data.code === 200) {

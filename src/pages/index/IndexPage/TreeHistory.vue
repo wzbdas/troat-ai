@@ -53,7 +53,15 @@ const formatTime = (time: string) => {
 // 获取倾诉列表
 const fetchQingsuList = async () => {
   try {
-    const res = await getQingsuList() as QingsuResponse;
+    const userInfo = uni.getStorageSync('userInfo')
+    const userId = userInfo ? JSON.parse(userInfo).id : ''
+    //#ifdef MP-WEIXIN
+        const res = await getQingsuList({userId:userId})
+    //#endif
+    // #ifdef H5
+    const res = await getQingsuList({ params: { userId } }) as QingsuResponse;
+    // #endif
+    
     if (res && res.data) {
       historyList.value = res.data.data.map(item => ({
         id: item.id,

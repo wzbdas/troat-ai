@@ -55,7 +55,7 @@
       </view>
          <!-- 保存按钮 -->
       <view class="save-button" @click="saveProfile">
-        <text>保存档案</text>
+        <text>{{ isEdit ? '更新档案' : '保存档案' }}</text>
       </view>
     </view>
     
@@ -65,11 +65,61 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue';
+import { ref, reactive, onMounted } from 'vue';
 
 // 修改导入路径，使用相对路径
-import { addUser } from '../../../servers/index'
+import { addUser, updateUser, getUser } from '../../../servers/index'
+import { onLoad } from '@dcloudio/uni-app';
 
+// 是否为编辑模式
+const isEdit = ref(false);
+
+//定义路由id
+const id = ref<string | number>('');
+
+// 获取用户详情并回显数据
+const fetchUserDetail = async () => {
+  if (!id.value) return;  
+  try {
+    //#ifdef MP-WEIXIN
+    const res = await getUser({id:id.value})
+    //#endif
+    // #ifdef H5
+    const res = await getUser({  params:{id:id.value} });
+    // #endif
+    if (res.data.code === 200 && res.data.data) {
+      const userData = res.data.data[0];
+      // 填充表单数据
+      userForm.name = userData.name || '';
+      userForm.sex = userData.sex || '女';
+      userForm.birthday = userData.birthday || '2000-01-01 12:00';
+      userForm.timeZone = userData.timeZone || '东8区';
+      userForm.area = userData.area || '北京北京东城';
+    } else {
+      uni.showToast({
+        title: '获取用户信息失败',
+        icon: 'none'
+      });
+    }
+  } catch (error) {
+    console.error('获取用户详情失败:', error);
+    uni.showToast({
+      title: '获取用户信息失败',
+      icon: 'none'
+    });
+  }
+};
+
+onLoad((options) => {
+  if (options.id) {
+    id.value = options.id;
+    console.log('路由参数:', options);
+    
+    isEdit.value = true;
+    // 获取用户详情并回显
+    fetchUserDetail();
+  }
+})
 
 // 定义档案表单接口
 interface ProfileForm {
@@ -78,8 +128,15 @@ interface ProfileForm {
   birthday: string;
   timeZone: string;
   area: string;
+  userId?: string | number;
 }
-
+ // #ifdef MP-WEIXIN
+ const userInfo = uni.getStorageSync('userInfo')
+// #endif
+// #ifdef H5
+const userInfo = localStorage.getItem('userInfo')
+// #endif
+const userId = userInfo ? JSON.parse(userInfo).id : ''
 // 初始化表单数据
 const userForm = reactive<ProfileForm>({
   name: '',
@@ -87,6 +144,7 @@ const userForm = reactive<ProfileForm>({
   birthday: '2000-01-01 12:00',
   timeZone: '东8区',
   area: '北京北京东城',
+  userId: userId,
 });
 
 
@@ -122,11 +180,22 @@ const saveProfile = async () => {
   }
 
   try {
-    // 调用添加用户接口
-    const res = await addUser(userForm);
-    if ( res.data.code === 200) {
+    let res;
+    
+    if (isEdit.value) {
+      // 编辑模式，调用更新接口
+      res = await updateUser({
+        ...userForm,
+        id: id.value
+      });
+    } else {
+      // 新增模式，调用添加接口
+      res = await addUser(userForm);
+    }
+    
+    if (res.data.code === 200) {
       uni.showToast({
-        title: '档案保存成功',
+        title: isEdit.value ? '档案更新成功' : '档案保存成功',
         icon: 'success'
       });
       // 保存成功后，跳转到档案列表页
@@ -147,7 +216,6 @@ const saveProfile = async () => {
       icon: 'error'
     });
   }
-
 };
 </script>
 

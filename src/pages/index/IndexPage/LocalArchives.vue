@@ -1,18 +1,6 @@
 <template>
   <view class="container">
 
-
-    <!-- 功能按钮区 -->
-    <view class="function-bar">
-      <view class="left-functions">
-        <text class="function-text">上次选择</text>
-      </view>
-      <view class="right-functions">
-        <text class="function-btn">+ 文件夹</text>
-        <text class="function-btn">⟲ 全部同步</text>
-      </view>
-    </view>
-
     <!-- 档案列表 -->
 
     <scroll-view class="archives-list" scroll-y >
@@ -27,7 +15,8 @@
         </view>
         <view class="item-right">
           <text class="demo-tag" v-if="user.isDemo">示例</text>
-          <button class="edit-btn" @click="handleDelete(user.id)">删除</button>
+          <button class="edit-btn" @click="handleEdit(user.id)">编辑</button>
+          <button class="delete-btn" @click="handleDelete(user.id)">删除</button>
         </view>
       </view>
     </scroll-view>
@@ -70,7 +59,27 @@ const selectedArchive = ref<string | number | null>(null)
 // 获取用户列表数据
 const fetchUserList = async () => {
   try {
-    const res = await getUserList()
+    // 使用uni-app的API获取用户信息，确保跨平台兼容
+    const userInfo = uni.getStorageSync('userInfo')
+    
+    if(!userInfo){
+      uni.showToast({
+        title: '请先登录',
+        icon: 'none'
+      })
+      return
+    }
+    const userId = userInfo ? JSON.parse(userInfo).id : ''
+
+    
+    // 修改这里，将userId作为参数传递给getUserList
+    //#ifdef MP-WEIXIN
+    const res = await getUserList({userId})
+    //#endif
+    // #ifdef H5
+    const res = await getUserList({ params: { userId } })
+    // #endif
+
     if (res.data.code === 200) {
       userList.value = res.data.data
       // 尝试从本地存储获取上次选择的档案
@@ -93,8 +102,8 @@ const fetchUserList = async () => {
 }
 
 // 处理单选框选择
-const handleRadioSelect = (userId: string | number) => {
-  selectedArchive.value = userId
+const handleRadioSelect = (id: string | number) => {
+  selectedArchive.value = id
 }
 
 // 确认选择按钮点击事件
@@ -132,7 +141,10 @@ const confirmSelection = () => {
     
     // 延迟返回，确保事件被处理
     setTimeout(() => {
-      uni.navigateBack()
+      //跳转到首页
+      uni.switchTab({
+        url: '/pages/index/index'
+      })
     }, 1500)
   } catch (err) {
     uni.showToast({
@@ -147,15 +159,18 @@ onMounted(() => {
   fetchUserList()
 })
 
-const goBack = () => {
-  uni.navigateBack()
-}
-
 
 const navigateToUserAdd = () => {
   uni.navigateTo({
     url: '/pages/index/IndexPage/UserAdd'
   })
+}
+// 在script部分添加编辑处理函数
+const handleEdit = (id: string | number) => {
+      // 导航到编辑页面，并传递档案ID
+      uni.navigateTo({
+        url: `/pages/index/IndexPage/UserAdd?id=${id}`
+      }) 
 }
 const handleDelete = (userId: string | number) => {
   uni.showModal({
@@ -249,24 +264,6 @@ const handleDelete = (userId: string | number) => {
   line-height: 2;
 }
 
-.function-bar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20rpx;
-  background-color: #fff;
-  margin-top: 20rpx;
-}
-
-.right-functions {
-  display: flex;
-  gap: 20rpx;
-}
-
-.function-btn {
-  color: #666;
-  font-size: 28rpx;
-}
 
 page {
   height: 100%;
@@ -320,17 +317,22 @@ page {
   font-size: 24rpx;
 }
 
-.edit-btn {
-
+/* 在style部分修改按钮样式 */
+.edit-btn, .delete-btn {
   width: 120rpx;
-
-
-  background-color: #FFB6C1;
   color: #fff;
   border-radius: 30rpx;
   font-size: 24rpx;
+  margin-left: 10rpx;
 }
 
+.edit-btn {
+  background-color: #FFB6C1;
+}
+
+.delete-btn {
+  background-color: #ccc;
+}
 .divider {
   text-align: center;
   padding: 30rpx 0;

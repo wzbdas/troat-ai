@@ -59,9 +59,18 @@ const getDollName = (dollId: number) => {
 
 // 获取回忆列表
 const fetchMemoryList = async () => {
+  const userInfo = uni.getStorageSync('userInfo')
+    const userId = userInfo ? JSON.parse(userInfo).id : ''
+    
   isLoading.value = true;
   try {
-    const res = await getMemoryList();
+     //#ifdef MP-WEIXIN
+     const res = await getMemoryList({userId:userId})
+    //#endif
+    // #ifdef H5
+    const res = await getMemoryList({ params: { userId } });
+    // #endif
+    
     if (res && res.data) {
       memoryList.value = res.data.data;
     } 

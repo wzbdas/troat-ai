@@ -97,7 +97,6 @@
       <view class="section-header">
         <text class="emoji">🌟</text>
         <text class="section-title">内心倾诉</text>
-        <text class="clear-btn">清除负能量</text>
       </view>
       
       <view class="feature-cards">
@@ -196,8 +195,6 @@ const updateFortuneData = () => {
 const updateUsers = () => {
   try {
     const UsersStr = uni.getStorageSync('Users')
-    console.log('获取到的用户信息:', UsersStr)
-    
     if (UsersStr) {
       // 尝试解析JSON字符串（如果存储的是字符串形式）
       let Users
@@ -239,26 +236,49 @@ const setDefaultUsers = () => {
 
 // 监听用户信息更新事件 
 const handleUsersUpdate = (Users: any) => {
-  console.log('收到用户信息更新事件:', Users)
   if (Users) {
     userName.value = Users.name || '游客'
     userBirthday.value = Users.birthday || '未设置'
     userArea.value = Users.area || '未设置'
     updateFortuneData()
+  } else {
+    // 如果收到null或undefined，设置为默认值
+    setDefaultUsers()
   }
 }
 
+
 // 页面加载时获取数据
 onMounted(() => {
-  console.log('页面加载，开始获取用户信息')
   updateUsers()
   // 添加事件监听
   uni.$on('updateUsers', handleUsersUpdate)
+  
+  // 使用uni-app的方式监听本地存储变化
+  // 由于uni-app没有直接提供storage变化监听的API，我们可以通过以下方式实现：
+  // 1. 在修改storage的地方主动触发自定义事件
+  // 2. 定期检查storage的值
+  
+  // 设置定时器定期检查Users存储
+  const checkStorageTimer = setInterval(() => {
+    try {
+      const currentUsers = uni.getStorageSync('Users')
+      if (!currentUsers) {
+        setDefaultUsers()
+      }
+    } catch (e) {
+      console.error('检查存储出错:', e)
+    }
+  }, 3000) // 每3秒检查一次
+  
+  // 组件卸载时清除定时器
+  onUnmounted(() => {
+    clearInterval(checkStorageTimer)
+  })
 })
 
 // 确保每次页面显示时都更新用户信息
 onShow(() => {
-  console.log('页面显示，更新用户信息')
   updateUsers()
 })
 
@@ -309,8 +329,8 @@ const navigateToBazi = () => {
 }
 
 const navigateToTarot = () => {
-  uni.navigateTo({
-    url: '/pages/index/IndexPage/Tarot'
+  uni.switchTab({
+    url: '/pages/count/count'
   })
 }
 
@@ -572,15 +592,6 @@ const navigateTomuyu = () => {
   color: #333;
   flex: 1;
 }
-
-.clear-btn {
-  font-size: 24rpx;
-  color: #666;
-  padding: 8rpx 20rpx;
-  background: rgba(255, 182, 193, 0.1);
-  border-radius: 30rpx;
-}
-
 .feature-cards {
   display: flex;
   padding: 20rpx;
